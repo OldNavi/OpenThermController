@@ -110,14 +110,6 @@ unsigned int getFaultCode() {
   return result5;
 }
 
-unsigned int resetBoiler()
-{
-  unsigned long request = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::Command, 1);
-  unsigned long response = sendRequest(request);
-  uint8_t dataValue = response & 0xFF;
-  unsigned result = dataValue;
-  return result; 
-}
 
 unsigned long sendRequest(unsigned long request) {
     send_newts= millis();
@@ -263,11 +255,6 @@ unsigned long sendRequest(unsigned long request) {
           
           if (responseStatus == OpenThermResponseStatus::SUCCESS && vars.isFault.value) {
             vars.dhw_temp.setValue(getFaultCode());
-          }
-
-          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-            if(vars.BLOR.isChanged())
-              resetBoiler();
           }
 
     
