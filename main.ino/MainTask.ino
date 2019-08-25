@@ -21,7 +21,7 @@ void static callback(char* topic, byte* payload, unsigned int length) {
     if(json.containsKey("mode"))
     {
           vars.heater_mode.value = json["mode"]|0;
-          EEPROM_int_write(MODE_VAR,vars.heater_mode.value);
+          EEPROM_long_write(MODE_VAR,vars.heater_mode.value);
     }
     if(json.containsKey("heater_temp"))
     {

@@ -64,17 +64,17 @@ void EEPROM_float_write(int addr, float num) {
   EEPROMr.commit();
 }
 
-int EEPROM_int_read(int addr) {
+long EEPROM_long_read(int addr) {
    byte raw[4];
   for (byte i = 0; i < 4; i++) raw[i] = EEPROMr.read(addr + i);
-  int &num = (int&)raw;
+   long &num = ( long&)raw;
   return num;
 }
 
-void EEPROM_int_write(int addr, int num) {
-  if (EEPROM_int_read(addr) != num) { //если сохраняемое отличается
+void EEPROM_long_write(int addr, long num) {
+  if (EEPROM_long_read(addr) != num) { //если сохраняемое отличается
     byte raw[4];
-    (int&)raw = num;
+    (long&)raw = num;
     for (byte i = 0; i < 4; i++) EEPROMr.write(addr + i, raw[i]);
   }
   EEPROMr.commit();

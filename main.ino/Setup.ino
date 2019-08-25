@@ -43,7 +43,20 @@ void setup_wifi() {
           strcpy(mqtt_password, json["mqtt_password"]);
           strcpy(host, json["hostname"]|"opentherm");
           vars.mqttTopicPrefix.value = json["mqtt_prefix"]|String("opentherm");
-          vars.heater_mode.value = EEPROM_int_read(MODE_VAR);
+          char magicB1 = EEPROMr.read(INIT_VAR);
+          char magicB2 = EEPROMr.read(INIT_VAR+1);
+          if(magicB1 != 'O' && magicB2 != 'T') {
+            // Еще не разу не писали значения по умолчанию
+            Serial.println("Инициализируем данные по умолчанию...");
+            EEPROMr.write(INIT_VAR,'O');
+            EEPROMr.write(INIT_VAR+1,'T');
+            EEPROM_long_write(MODE_VAR,vars.heater_mode.value);
+            EEPROM_float_write(HEATER_TEMP_SET,vars.heat_temp_set.value);
+            EEPROM_float_write(BOILER_TEMP_SET,vars.dhw_temp_set.value);
+            EEPROM_bool_write(HOUSE_TEMP_COMP,vars.house_temp_compsenation.value);
+            EEPROM_bool_write(OTC_COMP,vars.enableOutsideTemperatureCompensation.value);
+          }
+          vars.heater_mode.value = EEPROM_long_read(MODE_VAR);
           vars.heater_mode.prev_value = -1;
           vars.heat_temp_set.value = EEPROM_float_read(HEATER_TEMP_SET);
           vars.dhw_temp_set.value =  EEPROM_float_read(BOILER_TEMP_SET);

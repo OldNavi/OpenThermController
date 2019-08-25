@@ -120,17 +120,17 @@ unsigned int resetBoiler()
 }
 
 unsigned long sendRequest(unsigned long request) {
-    send_newts= millis();
-    if(send_newts - send_ts < 100) {
-      // Преждем чем слать что то - надо подождать 100ms согласно специфиикации протокола ОТ
-      delay(100 - send_newts - send_ts);
-    }
+//    send_newts= millis();
+//    if(send_newts - send_ts < 100) {
+//      // Преждем чем слать что то - надо подождать 100ms согласно специфиикации протокола ОТ
+//      delay(100 - send_newts - send_ts);
+//    }
     ot.sendRequestAync(request);
       while (!ot.isReady()) {
       ot.process();
       yield(); // This is local Task yield() call which allow us to switch to another task in scheduler
     }
-    send_ts = millis();
+//    send_ts = millis();
     return response;  // Response is global variable
 }
 
