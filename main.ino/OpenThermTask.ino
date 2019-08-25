@@ -5,6 +5,8 @@ class OTHandleTask: public Task {
 private:
   unsigned long new_ts = 0;
   unsigned long ts = 0;
+  unsigned long send_ts = 0;
+  unsigned long send_newts = 0;
   unsigned long loop_counter = 0;
   float 
        pv_last = 0,                              // предыдущая температура
@@ -118,11 +120,17 @@ unsigned int resetBoiler()
 }
 
 unsigned long sendRequest(unsigned long request) {
+    send_newts= millis();
+    if(send_newts - send_ts < 100) {
+      // Преждем чем слать что то - надо подождать 100ms согласно специфиикации протокола ОТ
+      delay(100 - send_newts - send_ts);
+    }
     ot.sendRequestAync(request);
       while (!ot.isReady()) {
       ot.process();
       yield(); // This is local Task yield() call which allow us to switch to another task in scheduler
     }
+    send_ts = millis();
     return response;  // Response is global variable
 }
 
@@ -181,8 +189,15 @@ unsigned long sendRequest(unsigned long request) {
           // с "кодом идентификатора участника", который идентифицирует производителя устройства.
           //=======================================================================================
           unsigned long request3 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SConfigSMemberIDcode, 0xFFFF);
-          uint8_t SlaveMemberIDcode = sendRequest(request3) >> 0 & 0xFF;
-
+          unsigned long response3 = sendRequest(request3);
+          uint8_t SlaveMemberIDcode =  response3 >> 0 & 0xFF;
+          uint8_t flags = (response3 & 0xFFFF) >> 8 & 0xFF;
+          vars.dhw_present.value = flags & 0x01;  
+          vars.control_type.value = flags & 0x02;  
+          vars.cooling_present.value = flags & 0x04;
+          vars.dhw_tank_present.value = flags & 0x08; 
+          vars.pump_control_present.value = flags & 0x10; 
+          vars.ch2_present.value = flags & 0x20; 
 
           unsigned long request2 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MConfigMMemberIDcode, SlaveMemberIDcode);
           unsigned long respons2 = sendRequest(request2);

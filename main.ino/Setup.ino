@@ -1,5 +1,4 @@
 
-
 //callback notifying us of the need to save config
 void saveConfigCallback () {
   Serial.println("Should save config");
@@ -13,6 +12,7 @@ void saveConfigCallback () {
 void setup_wifi() {
  Serial.println();
   WiFi.mode(WIFI_STA);
+  WiFiManager wifiManager;
   //clean FS, for testing
   //SPIFFS.format();
 
@@ -43,19 +43,29 @@ void setup_wifi() {
           strcpy(mqtt_password, json["mqtt_password"]);
           strcpy(host, json["hostname"]|"opentherm");
           vars.mqttTopicPrefix.value = json["mqtt_prefix"]|String("opentherm");
-          vars.heater_mode.value = json["mode"]|0;
-          vars.heat_temp_set.value = json["heater_temp"]|30.0;
-          vars.dhw_temp_set.value = json["dhw_temp"]|50.0;          
-          vars.house_temp_compsenation.value = json["house_temp_comp"]|true;  
-          vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true;  
+          vars.heater_mode.value = EEPROM_int_read(MODE_VAR);
+          vars.heater_mode.prev_value = -1;
+          vars.heat_temp_set.value = EEPROM_float_read(HEATER_TEMP_SET);
+          vars.dhw_temp_set.value =  EEPROM_float_read(BOILER_TEMP_SET);
+          vars.house_temp_compsenation.value = EEPROM_bool_read(HOUSE_TEMP_COMP);
+          vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(OTC_COMP);
+//          vars.heater_mode.value = json["mode"]|0;
+//          vars.heater_mode.prev_value = -1;
+//          vars.heat_temp_set.value = json["heater_temp"]|30.0;
+//          vars.dhw_temp_set.value = json["dhw_temp"]|50.0;          
+//          vars.house_temp_compsenation.value = json["house_temp_comp"]|true;  
+//          vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true;  
         } else {
           Serial.println("failed to load json config");
+          wifiManager.resetSettings();
           SPIFFS.format();
           delay(5000);
           ESP.reset();
         }
         configFile.close();
       }
+    } else {
+          wifiManager.resetSettings();
     }
   } else {
     Serial.println("failed to mount FS");
@@ -73,7 +83,7 @@ void setup_wifi() {
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
+
 
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
@@ -146,6 +156,8 @@ void setup() {
   digitalWrite(EXTERNAL_LED_2, LOW);
   digitalWrite(EXTERNAL_LED_3, LOW);
   Serial.begin(115200);
+  EEPROMr.size(4);
+  EEPROMr.begin(32);
   setup_wifi();
   
   // Запускаем основные потоки - в одном обрабатываем сообщения OpenTherm

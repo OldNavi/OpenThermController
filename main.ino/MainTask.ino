@@ -9,6 +9,7 @@ class MainTaskClass: public Task {
 
   protected:
 
+
 void static callback(char* topic, byte* payload, unsigned int length) {
   payload[length] = '\0';
   String strTopic = String(topic);
@@ -20,29 +21,29 @@ void static callback(char* topic, byte* payload, unsigned int length) {
     if(json.containsKey("mode"))
     {
           vars.heater_mode.value = json["mode"]|0;
-          shouldSaveConfig = true;
+          EEPROM_int_write(MODE_VAR,vars.heater_mode.value);
     }
     if(json.containsKey("heater_temp"))
     {
           vars.heat_temp_set.value = json["heater_temp"]|30.0;
-          shouldSaveConfig = true;
+          EEPROM_float_write(HEATER_TEMP_SET,vars.heat_temp_set.value);
     }
     if(json.containsKey("dhw_temp"))
     {
           vars.dhw_temp_set.value = json["dhw_temp"]|50.0;
-          shouldSaveConfig = true;
+          EEPROM_float_write(BOILER_TEMP_SET,vars.dhw_temp_set.value);
     }   
     if(json.containsKey("house_temp_comp"))      
     {
           vars.house_temp_compsenation.value = json["house_temp_comp"]|true;  
-          shouldSaveConfig = true;
+          EEPROM_bool_write(HOUSE_TEMP_COMP,vars.house_temp_compsenation.value);
     }
      if(json.containsKey("outside_temp_comp"))   
      {
           vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true; 
-          shouldSaveConfig = true;
+           EEPROM_bool_write(OTC_COMP,vars.enableOutsideTemperatureCompensation.value);
      } 
-     if(json.containsKey("house_comp"))   
+     if(json.containsKey("house_temp"))   
           vars.house_temp.value = json["house_temp"]|21.0;  
      if(json.containsKey("status"))   
           handleUpdateToMQTT(true); 
@@ -84,8 +85,8 @@ void checkAndSaveConfig()
     //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-    DynamicJsonDocument json(JSON_OBJECT_SIZE(20));
-
+    StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
+    
     json["mqtt_server"] = mqtt_server;
     json["hostname"] = host;
     json["mqtt_port"] = mqtt_port;
@@ -97,12 +98,11 @@ void checkAndSaveConfig()
     json["dhw_temp"] = vars.dhw_temp_set.value;
     json["house_temp_comp"] = vars.house_temp_compsenation.value;  
     json["outside_temp_comp"] = vars.enableOutsideTemperatureCompensation.value;
-
+    
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
-
     serializeJson(json,Serial);
     serializeJson(json,configFile);
     configFile.close();
@@ -183,6 +183,9 @@ void checkAndSaveConfig()
      reply += String("\nТемпература в доме = ") + vars.house_temp.value;     
      reply += String("\nУстановка котла = ") + vars.heat_temp_set.value;
      reply += String("\nУстановка ГВС = ") + vars.dhw_temp_set.value;
+     reply += String("\nОтопление разрешено  = ") + vars.isHeatingEnabled.value;
+     reply += String("\nГВС разрешено = ") + vars.isDHWenabled.value;
+     reply += String("\nОхлаждение разрешено = ") + vars.isCoolingEnabled.value;
      httpServer.sendHeader("Content-Type", "text/plain; charset=utf-8");
      httpServer.send(200, "text/plain", reply);
    }

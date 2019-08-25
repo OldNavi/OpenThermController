@@ -1,4 +1,3 @@
-
 #include <FS.h>
 #include <Scheduler.h>
 #include "Variables.h"
@@ -16,6 +15,8 @@
 
 #include <OpenTherm.h>
 #include <ArduinoJson.h>   
+#include <EEPROM_Rotate.h>
+
 
 
 //Входные и выходные контакты OpenTherm, подключены к 4 и 5 контактам платы
@@ -44,6 +45,51 @@ char mqtt_password[34];
 // OT Response
 unsigned long response = 0;
 
+EEPROM_Rotate EEPROMr;
+
+// чтение float
+float EEPROM_float_read(int addr) {
+  byte raw[4];
+  for (byte i = 0; i < 4; i++) raw[i] = EEPROMr.read(addr + i);
+  float &num = (float&)raw;
+  return num;
+}
+// запись float
+void EEPROM_float_write(int addr, float num) {
+  if (EEPROM_float_read(addr) != num) { //если сохраняемое отличается
+    byte raw[4];
+    (float&)raw = num;
+    for (byte i = 0; i < 4; i++) EEPROMr.write(addr + i, raw[i]);
+  }
+  EEPROMr.commit();
+}
+
+int EEPROM_int_read(int addr) {
+   byte raw[4];
+  for (byte i = 0; i < 4; i++) raw[i] = EEPROMr.read(addr + i);
+  int &num = (int&)raw;
+  return num;
+}
+
+void EEPROM_int_write(int addr, int num) {
+  if (EEPROM_int_read(addr) != num) { //если сохраняемое отличается
+    byte raw[4];
+    (int&)raw = num;
+    for (byte i = 0; i < 4; i++) EEPROMr.write(addr + i, raw[i]);
+  }
+  EEPROMr.commit();
+}
+
+bool EEPROM_bool_read(int addr) {
+  return (bool)EEPROMr.read(addr);
+}
+
+void EEPROM_bool_write(int addr, bool num) {
+  if (EEPROM_bool_read(addr) != num) { //если сохраняемое отличается
+    EEPROMr.write(addr , num);
+  }
+  EEPROMr.commit();
+}
 
 OpenTherm ot(inPin,outPin);
 WiFiClient espClient;

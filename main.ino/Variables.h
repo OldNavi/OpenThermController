@@ -54,6 +54,12 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> isFault;
   VARIABLE<bool> isFlameOn;
   VARIABLE<bool> isDiagnostic;
+  VARIABLE<bool> dhw_present;   // false - not present, true - present
+  VARIABLE<bool> control_type;  // false - modulation, true - on/off control
+  VARIABLE<bool> cooling_present; // false - no, true - yes
+  VARIABLE<bool> dhw_tank_present; // false  - no, true - yes
+  VARIABLE<bool> pump_control_present; // false  - no, true - yes
+  VARIABLE<bool> ch2_present; // false - not present, true - present
   VARIABLE<bool> BLOR = VARIABLE<bool>(false);
   VARIABLE<bool> enableCentralHeating = VARIABLE<bool>(true) ; 
   VARIABLE<bool> enableHotWater = VARIABLE<bool>(true) ;
@@ -62,3 +68,9 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> enableCentralHeating2 = VARIABLE<bool>(false) ; 
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
 } vars;  // Static declartion of variables we need
+
+#define MODE_VAR 0
+#define HEATER_TEMP_SET MODE_VAR+4
+#define BOILER_TEMP_SET HEATER_TEMP_SET+4
+#define HOUSE_TEMP_COMP BOILER_TEMP_SET+4
+#define OTC_COMP    HOUSE_TEMP_COMP+1
