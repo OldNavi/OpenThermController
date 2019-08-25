@@ -146,7 +146,7 @@ unsigned long sendRequest(unsigned long request) {
   {
       new_ts = millis();
   if (new_ts - ts > 1000) {
-    if(vars.heater_mode.isChanged()) {
+    
       switch(vars.heater_mode.value) {
         case 0: // All off
           vars.enableCentralHeating.value = false;
@@ -163,7 +163,7 @@ unsigned long sendRequest(unsigned long request) {
         default: // No changes
           break;                    
       }
-    }
+    
     unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
     unsigned long statusResponse = sendRequest(statusRequest);
     vars.isHeatingEnabled.value = ot.isCentralHeatingActive(statusResponse);

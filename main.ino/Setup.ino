@@ -59,7 +59,9 @@ void setup_wifi() {
           vars.heater_mode.value = EEPROM_long_read(MODE_VAR);
           vars.heater_mode.prev_value = -1;
           vars.heat_temp_set.value = EEPROM_float_read(HEATER_TEMP_SET);
+          vars.heat_temp_set.prev_value = -1;
           vars.dhw_temp_set.value =  EEPROM_float_read(BOILER_TEMP_SET);
+          vars.dhw_temp_set.prev_value = -1;
           vars.house_temp_compsenation.value = EEPROM_bool_read(HOUSE_TEMP_COMP);
           vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(OTC_COMP);
 //          vars.heater_mode.value = json["mode"]|0;
