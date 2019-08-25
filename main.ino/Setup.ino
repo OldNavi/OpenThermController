@@ -50,6 +50,9 @@ void setup_wifi() {
           vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true;  
         } else {
           Serial.println("failed to load json config");
+          SPIFFS.format();
+          delay(5000);
+          ESP.reset();
         }
         configFile.close();
       }
