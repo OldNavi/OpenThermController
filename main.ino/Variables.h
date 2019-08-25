@@ -60,7 +60,6 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> dhw_tank_present; // false  - no, true - yes
   VARIABLE<bool> pump_control_present; // false  - no, true - yes
   VARIABLE<bool> ch2_present; // false - not present, true - present
-  VARIABLE<bool> BLOR = VARIABLE<bool>(false);
   VARIABLE<bool> enableCentralHeating = VARIABLE<bool>(true) ; 
   VARIABLE<bool> enableHotWater = VARIABLE<bool>(true) ;
   VARIABLE<bool> enableCooling = VARIABLE<bool>(false) ; 

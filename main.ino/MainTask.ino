@@ -49,8 +49,6 @@ void static callback(char* topic, byte* payload, unsigned int length) {
           handleUpdateToMQTT(true); 
      if(json.containsKey("debug"))       
           debug = json["debug"]|false;      
-     if(json.containsKey("reset"))       
-          vars.BLOR.value = json["reset"]|false;  
   }
 }
 
