@@ -93,11 +93,7 @@ void checkAndSaveConfig()
     json["mqtt_user"] = mqtt_user;
     json["mqtt_password"] = mqtt_password;
     json["mqtt_prefix"] = vars.mqttTopicPrefix.value;
-    json["mode"] = vars.heater_mode.value;
-    json["heater_temp"] = vars.heat_temp_set.value;
-    json["dhw_temp"] = vars.dhw_temp_set.value;
-    json["house_temp_comp"] = vars.house_temp_compsenation.value;  
-    json["outside_temp_comp"] = vars.enableOutsideTemperatureCompensation.value;
+
     
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -120,7 +116,7 @@ void checkAndSaveConfig()
       // publisish all MQTT stuff
       mqtt_ts = mqtt_new_ts;
       String payload;
-      StaticJsonDocument<JSON_OBJECT_SIZE(26)> json;
+      StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
       json["mode"] = vars.heater_mode.value;
       json["heater_temp_set"] = vars.heat_temp_set.value;
       json["dhw_temp_set"] = vars.dhw_temp_set.value;
@@ -142,6 +138,10 @@ void checkAndSaveConfig()
       json["gas_fault"] = vars.gas_fault.value;
       json["air_fault"] = vars.air_fault.value;
       json["water_overtemp"] = vars.water_overtemp.value;
+      json["dhw_max_limit"] = vars.DHWsetpUpp.value;
+      json["dhw_min_limit"] = vars.DHWsetpLow.value;
+      json["heat_max_limit"] = vars.MaxCHsetpUpp.value;
+      json["heat_min_limit"] = vars.MaxCHsetpLow.value;
       serializeJson(json,payload);
       int msg_size = payload.length();
       DEBUG.println((vars.mqttTopicPrefix.value+"/status").c_str());
