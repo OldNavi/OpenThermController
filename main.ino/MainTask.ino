@@ -20,8 +20,8 @@ void static callback(char* topic, byte* payload, unsigned int length) {
   if (!json.isNull()) {
     if(json.containsKey("mode"))
     {
-          vars.heater_mode.value = json["mode"]|0;
-          EEPROM_long_write(MODE_VAR,vars.heater_mode.value);
+          vars.mode.value = json["mode"]|0;
+          EEPROM_long_write(MODE_VAR,vars.mode.value);
     }
     if(json.containsKey("heater_temp"))
     {
@@ -42,6 +42,16 @@ void static callback(char* topic, byte* payload, unsigned int length) {
      {
           vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true; 
            EEPROM_bool_write(OTC_COMP,vars.enableOutsideTemperatureCompensation.value);
+     } 
+     if(json.containsKey("heat_enable"))   
+     {
+          vars.enableOutsideTemperatureCompensation.value = json["heat_enable"]|false; 
+           EEPROM_bool_write(HEATER_ENABLE,vars.enableCentralHeating.value);
+     } 
+     if(json.containsKey("curve_ratio"))   
+     {
+          vars.iv_k.value = json["curve_ratio"]|1.5f; 
+           EEPROM_float_write(CURVE_K,vars.iv_k.value);
      } 
      if(json.containsKey("house_temp"))   
           vars.house_temp.value = json["house_temp"]|21.0;  
@@ -118,8 +128,9 @@ void checkAndSaveConfig()
       mqtt_ts = mqtt_new_ts;
       String payload;
       StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
-      json["mode"] = vars.heater_mode.value;
+      json["mode"] = vars.mode.value;
       json["heater_temp_set"] = vars.heat_temp_set.value;
+      json["heater_enable"] = vars.enableCentralHeating.value;
       json["dhw_temp_set"] = vars.dhw_temp_set.value;
       json["heater_temp"] = vars.heat_temp.value;
       json["dhw_temp"] = vars.dhw_temp.value;
@@ -143,6 +154,7 @@ void checkAndSaveConfig()
       json["dhw_min_limit"] = vars.DHWsetpLow.value;
       json["heat_max_limit"] = vars.MaxCHsetpUpp.value;
       json["heat_min_limit"] = vars.MaxCHsetpLow.value;
+      json["curve_ratio"] = vars.iv_k.value;
       serializeJson(json,payload);
       int msg_size = payload.length();
       DEBUG.println((vars.mqttTopicPrefix.value+"/status").c_str());
@@ -167,15 +179,15 @@ void checkAndSaveConfig()
 
   static String heaterMode()
   {
-    switch(vars.heater_mode.value) {
+    switch(vars.mode.value) {
       case 0:
-          return "выключен";
+          return "ПИД";
           break;     
       case 1:
-          return "ГВС";
+          return "Кривые";
           break;
       case 2:
-          return "Отопление и ГВС";
+          return "Кривые с учетом температуры";
           break; 
       default:
           return "";          
@@ -183,7 +195,7 @@ void checkAndSaveConfig()
     return "";
   }
    static void handleRoot() {
-     String reply = "Режим работы = " + heaterMode();
+     String reply = "Режим работы регулятора = " + heaterMode();
      reply += String("\nСтатус = ") + (vars.online.value ? String("онлайн") : String("оффлайн"));
      reply += String("\nГорелка включена = ") + vars.isFlameOn.value;
      reply += String("\nТемпература котла = ") + vars.heat_temp.value;

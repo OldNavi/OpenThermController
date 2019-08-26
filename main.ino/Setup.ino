@@ -50,26 +50,25 @@ void setup_wifi() {
             Serial.println("Инициализируем данные по умолчанию...");
             EEPROMr.write(INIT_VAR,'O');
             EEPROMr.write(INIT_VAR+1,'T');
-            EEPROM_long_write(MODE_VAR,vars.heater_mode.value);
+            EEPROM_long_write(MODE_VAR,vars.mode.value);
             EEPROM_float_write(HEATER_TEMP_SET,vars.heat_temp_set.value);
             EEPROM_float_write(BOILER_TEMP_SET,vars.dhw_temp_set.value);
             EEPROM_bool_write(HOUSE_TEMP_COMP,vars.house_temp_compsenation.value);
             EEPROM_bool_write(OTC_COMP,vars.enableOutsideTemperatureCompensation.value);
+            EEPROM_bool_write(HEATER_ENABLE,vars.enableCentralHeating.value);
+            EEPROM_float_write(CURVE_K,vars.iv_k.value);
+
           }
-          vars.heater_mode.value = EEPROM_long_read(MODE_VAR);
-          vars.heater_mode.prev_value = -1;
+          vars.mode.value = EEPROM_long_read(MODE_VAR);
+          vars.mode.prev_value = -1;
           vars.heat_temp_set.value = EEPROM_float_read(HEATER_TEMP_SET);
           vars.heat_temp_set.prev_value = -1;
           vars.dhw_temp_set.value =  EEPROM_float_read(BOILER_TEMP_SET);
           vars.dhw_temp_set.prev_value = -1;
           vars.house_temp_compsenation.value = EEPROM_bool_read(HOUSE_TEMP_COMP);
           vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(OTC_COMP);
-//          vars.heater_mode.value = json["mode"]|0;
-//          vars.heater_mode.prev_value = -1;
-//          vars.heat_temp_set.value = json["heater_temp"]|30.0;
-//          vars.dhw_temp_set.value = json["dhw_temp"]|50.0;          
-//          vars.house_temp_compsenation.value = json["house_temp_comp"]|true;  
-//          vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true;  
+          vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(HEATER_ENABLE);
+          vars.iv_k.value = EEPROM_float_read(CURVE_K);
         } else {
           Serial.println("failed to load json config");
           wifiManager.resetSettings();

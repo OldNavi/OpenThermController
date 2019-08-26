@@ -59,7 +59,7 @@ float pid(float sp, float pv, float pv_last, float& ierr, float dt) {
   float KI = Kc / tauI;
   float KD = Kc * tauD;
   // верхняя и нижняя границы уровня нагрева
-  float ophi = 100;
+  float ophi = vars.MaxCHsetpUpp.value > 0 ? vars.MaxCHsetpUpp.value : 100;
   float oplo = 0;
   // вычислить ошибку
   float error = sp - pv;
@@ -333,8 +333,8 @@ void testSupportedIDs()
   if (new_ts - ts > 1000) {
     
 
-      vars.enableCentralHeating.value = vars.heater_mode.value & 0x2;
-      vars.enableHotWater.value = vars.heater_mode.value & 0x1;
+      // vars.enableCentralHeating.value = vars.heater_mode.value & 0x2;
+      // vars.enableHotWater.value = vars.heater_mode.value & 0x1;
     
     unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
     unsigned long statusResponse = sendRequest(statusRequest);
@@ -407,10 +407,26 @@ void testSupportedIDs()
        
            if(vars.house_temp_compsenation.value)
            {
-            float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
-            pv_last =  vars.house_temp.value;
-            unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
-            sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+             switch (vars.mode.value) {
+               case 0: 
+                  // pid
+                  {
+                  float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
+                  pv_last =  vars.house_temp.value;
+                  unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
+                  sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+                  }
+                  break;
+              case 1: 
+                  // эквитермические кривые
+                  break;
+              case 2: 
+                  // эквитермические кривые с учетом температуры
+                  break;
+              default:
+                  break;    
+
+             }
            } else 
             {
                   unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);

@@ -20,7 +20,7 @@
 
 
 //Входные и выходные контакты OpenTherm, подключены к 4 и 5 контактам платы
-const int inPin = 4;             //D2
+const int inPin = 4;            //D2
 const int outPin = 5;           //D1
 
 #define BUILTIN_LED 2                 // D4 Встроенный LED

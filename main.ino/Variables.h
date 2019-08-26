@@ -39,8 +39,8 @@ template<typename V> struct VARIABLE {
 };
 
 static struct MAIN_VARIABLES {
-  VARIABLE<bool>  online = VARIABLE<bool>(false);
-  VARIABLE<int>   heater_mode;
+  VARIABLE<bool>  online = VARIABLE<bool>(false);  
+  VARIABLE<int>   mode = VARIABLE<int>(0); // Режим регулятора 0-ПИД, 1-Эквитермические кривая ,2-уквитермическая кривая с учетом темрератур
   VARIABLE<float> heat_temp_set;
   VARIABLE<float> house_temp;
   VARIABLE<bool> house_temp_compsenation = VARIABLE<bool>(true);
@@ -61,7 +61,7 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> gas_fault = VARIABLE<bool>(false);
   VARIABLE<bool> air_fault = VARIABLE<bool>(false);
   VARIABLE<bool> water_overtemp = VARIABLE<bool>(false);
-
+  VARIABLE<float> iv_k = VARIABLE<float>(1.5f);
 
   
   VARIABLE<bool> dhw_present;   // false - not present, true - present
@@ -70,7 +70,7 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> dhw_tank_present; // false  - no, true - yes
   VARIABLE<bool> pump_control_present; // false  - no, true - yes
   VARIABLE<bool> ch2_present; // false - not present, true - present
-  VARIABLE<bool> enableCentralHeating = VARIABLE<bool>(true) ; 
+  VARIABLE<bool> enableCentralHeating = VARIABLE<bool>(false) ; 
   VARIABLE<bool> enableHotWater = VARIABLE<bool>(true) ;
   VARIABLE<bool> enableCooling = VARIABLE<bool>(false) ; 
   VARIABLE<bool> enableOutsideTemperatureCompensation = VARIABLE<bool>(true) ; 
@@ -89,3 +89,5 @@ static struct MAIN_VARIABLES {
 #define BOILER_TEMP_SET HEATER_TEMP_SET+4
 #define HOUSE_TEMP_COMP BOILER_TEMP_SET+4
 #define OTC_COMP    HOUSE_TEMP_COMP+1
+#define HEATER_ENABLE    OTC_COMP+1
+#define CURVE_K          HEATER_ENABLE + 4
