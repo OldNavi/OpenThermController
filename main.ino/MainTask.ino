@@ -208,7 +208,7 @@ void checkAndSaveConfig()
      reply += String("\nКод ошибки  = E") + vars.fault_code.value;  
      reply += String("\nСервис требуется  = ") + (vars.service_required.value ? String("да") : String("нет"));
      reply += String("\nУдаленный сброс разрешен  = ") + (vars.lockout_reset.value ? String("да") : String("нет"));
-     reply += String("\nОшибка низкого давления воды  = ") + (vars.low_water_pressure.value ? String("да") : String("проточная"));
+     reply += String("\nОшибка низкого давления воды  = ") + (vars.low_water_pressure.value ? String("да") : String("нет"));
      reply += String("\nОшибка по газу/огню  = ") + (vars.gas_fault.value ? String("да") : String("нет"));
      reply += String("\nОшибка по тяге воздуха  = ") + (vars.air_fault.value ? String("да") : String("нет"));
      reply += String("\nПерегрев теплоносителя = ") + (vars.water_overtemp.value ? String("да") : String("нет"));
