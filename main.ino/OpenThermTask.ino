@@ -76,32 +76,17 @@ float getBoilerTemp() {
 float getDHWTemp() {
   unsigned long request26 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0);
   unsigned long respons26 = sendRequest(request26);
-  uint16_t dataValue26 = respons26 & 0xFFFF;
-  float result26 = dataValue26 / 256;
-  return result26;
+  return ot.temperatureToData(respons26);
 }
 float getOutsideTemp() {
   unsigned long request27 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0);
-  unsigned long respons27 = sendRequest(request27);
-  uint16_t dataValue27 = respons27 & 0xFFFF;
-  if (dataValue27 > 32768) {
-    //negative
-    float result27 = -(65536 - dataValue27) / 256;
-    return result27;
-  } else {
-    //positive
-    float result27 = dataValue27 / 256;
-    return result27;
-  }
+  return ot.getTemperature(sendRequest(request27));
 }
 float setDHWTemp(float val) {
-  unsigned int  val_in_hex = (val * 256 * 16 / 16);
-  unsigned long request56 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::TdhwSet, val_in_hex);
-  unsigned long respons56 = sendRequest(request56);
-  uint16_t dataValue56 = respons56 & 0xFFFF;
-  float result56 = dataValue56 / 256;
-  return result56;
+  unsigned long request56 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::TdhwSet, ot.temperatureToData(val));
+  return ot.getTemperature(sendRequest(request56));
 }
+
 unsigned int getFaultCode() {
   unsigned long request5 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0);
   unsigned long respons5 = sendRequest(request5);
@@ -257,7 +242,25 @@ unsigned long sendRequest(unsigned long request) {
             vars.dhw_temp.setValue(getFaultCode());
           }
 
-    
+  // Верхняя и нижняя границы для регулировки установки TdhwSet-UB / TdhwSet-LB  (t°C)
+          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
+            unsigned long request48 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0);
+            unsigned long respons48 = sendRequest(request48);
+            uint16_t dataValue48 = respons48 & 0xFFFF;
+            vars.DHWsetpUpp.value = dataValue48 / 256;
+            uint8_t dataValue48_ = respons48 & 0xFF;
+            vars.DHWsetpLow.value = dataValue48_;
+          }
+
+  // Верхняя и нижняя границы для регулировки MaxTSet-UB / MaxTSet-LB (t°C)
+          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
+            unsigned long request49 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::MaxTSetUBMaxTSetLB, 0);
+            unsigned long respons49 = sendRequest(request49);
+            uint16_t dataValue49 = respons49 & 0xFFFF;
+            vars.MaxCHsetpUpp.value = dataValue49 / 256;
+            uint8_t dataValue49_ = respons49 & 0xFF;
+            vars.MaxCHsetpLow.value = dataValue49_;
+          }    
     }
   }
 

@@ -175,6 +175,7 @@ void checkAndSaveConfig()
      String reply = "Режим работы = " + heaterMode();
      reply += String("\nГорелка включена = ") + vars.isFlameOn.value;
      reply += String("\nОшибка котла  = ") + vars.isFault.value;
+     reply += String("\nОгонь включен  = ") + vars.isFlameOn.value;
      reply += String("\nТемпература котла = ") + vars.heat_temp.value;
      reply += String("\nТемпература ГВС = ") + vars.dhw_temp.value;
      reply += String("\nТемпература на улице = ") + vars.outside_temp.value;
@@ -184,6 +185,16 @@ void checkAndSaveConfig()
      reply += String("\nОтопление разрешено  = ") + vars.isHeatingEnabled.value;
      reply += String("\nГВС разрешено = ") + vars.isDHWenabled.value;
      reply += String("\nОхлаждение разрешено = ") + vars.isCoolingEnabled.value;
+     reply += String("\nКонтур отопления вкл  = ") + vars.enableCentralHeating.value;
+     reply += String("\nКонтур ГВС вкл = ") + vars.enableHotWater.value;
+     reply += String("\nКонтур Охлаждения вкл = ") + vars.enableCooling.value;
+     reply += String("\n ----------- Конфигурация ---------------");
+     reply += String("\nГраницы установок контура отопления = от ") + vars.MaxCHsetpLow.value + " до "+vars.MaxCHsetpUpp.value;
+     reply += String("\nГраницы установок контура ГВС = от ") + vars.DHWsetpLow.value + " до "+vars.DHWsetpUpp.value;
+     reply += String("\nГВС встроен  = ") + vars.dhw_present.value;
+     reply += String("\nТип управления= ") + vars.control_type.value ? "On/Off" : "Модуляция";
+     reply += String("\nГВС  = ") + vars.dhw_tank_present.value ? "бак" : "проточная";
+
      httpServer.sendHeader("Content-Type", "text/plain; charset=utf-8");
      httpServer.send(200, "text/plain", reply);
    }

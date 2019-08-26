@@ -65,6 +65,10 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> enableCooling = VARIABLE<bool>(false) ; 
   VARIABLE<bool> enableOutsideTemperatureCompensation = VARIABLE<bool>(true) ; 
   VARIABLE<bool> enableCentralHeating2 = VARIABLE<bool>(false) ; 
+  VARIABLE<int>  DHWsetpUpp;
+  VARIABLE<int>  DHWsetpLow;
+  VARIABLE<int>  MaxCHsetpUpp;
+  VARIABLE<int>  MaxCHsetpLow;
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
 } vars;  // Static declartion of variables we need
 
