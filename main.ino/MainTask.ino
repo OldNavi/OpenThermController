@@ -109,6 +109,8 @@ void checkAndSaveConfig()
   }
 }
 
+
+
   void static handleUpdateToMQTT(bool now)
   {
     mqtt_new_ts = millis();
@@ -118,7 +120,6 @@ void checkAndSaveConfig()
       String payload;
       StaticJsonDocument<JSON_OBJECT_SIZE(20)> json;
       json["mode"] = vars.heater_mode.value;
-      json["status"] = (vars.online.value ? String("online") : String("offline"));
       json["heater_temp_set"] = vars.heat_temp_set.value;
       json["dhw_temp_set"] = vars.dhw_temp_set.value;
       json["heater_temp"] = vars.heat_temp.value;
@@ -138,7 +139,7 @@ void checkAndSaveConfig()
       DEBUG.println((vars.mqttTopicPrefix.value+"/status").c_str());
       DEBUG.println(payload);
       DEBUG.println(String("Payload length = ") + msg_size );
-      bool result = client.beginPublish((vars.mqttTopicPrefix.value+"/status").c_str(),msg_size,false);
+      bool result = client.beginPublish((vars.mqttTopicPrefix.value+"/state").c_str(),msg_size,false);
       int bytes_left = msg_size;
       int offset = 0;
       byte  * str = (byte *)payload.c_str();
@@ -150,7 +151,7 @@ void checkAndSaveConfig()
       }
       if(result)
          result = client.endPublish();
-
+      client.publish((vars.mqttTopicPrefix.value+"/status").c_str(), vars.online.value ? "online" : "offline");
       DEBUG.println("Send message was " + result ? "successful" : "not successful");
     }
   }
