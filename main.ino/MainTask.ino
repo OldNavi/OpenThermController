@@ -192,8 +192,8 @@ void checkAndSaveConfig()
      reply += String("\nГраницы установок контура отопления = от ") + vars.MaxCHsetpLow.value + " до "+vars.MaxCHsetpUpp.value;
      reply += String("\nГраницы установок контура ГВС = от ") + vars.DHWsetpLow.value + " до "+vars.DHWsetpUpp.value;
      reply += String("\nГВС встроен  = ") + vars.dhw_present.value;
-     reply += String("\nТип управления= ") + vars.control_type.value ? "On/Off" : "Модуляция";
-     reply += String("\nГВС  = ") + vars.dhw_tank_present.value ? "бак" : "проточная";
+     reply += String("\nТип управления = ") + (vars.control_type.value ? String("On/Off") : String("Модуляция"));
+     reply += String("\nГВС  = ") + (vars.dhw_tank_present.value ? String("бак") : String("проточная"));
 
      httpServer.sendHeader("Content-Type", "text/plain; charset=utf-8");
      httpServer.send(200, "text/plain", reply);
