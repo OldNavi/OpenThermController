@@ -49,6 +49,8 @@ void static callback(char* topic, byte* payload, unsigned int length) {
           handleUpdateToMQTT(true); 
      if(json.containsKey("debug"))       
           debug = json["debug"]|false;      
+     if(json.containsKey("dump"))       
+          vars.dump_request.value = json["dump"]|false;  
   }
 }
 
@@ -178,7 +180,7 @@ void checkAndSaveConfig()
      reply += String("\nСтатус = ") + (vars.online.value ? String("онлайн") : String("оффлайн"));
      reply += String("\nГорелка включена = ") + vars.isFlameOn.value;
      reply += String("\nОшибка котла  = ") + vars.isFault.value;
-     reply += String("\nОгонь включен  = ") + vars.isFlameOn.value;
+     reply += String("\nКод ошибки  = ") + vars.fault_code.value;
      reply += String("\nТемпература котла = ") + vars.heat_temp.value;
      reply += String("\nТемпература ГВС = ") + vars.dhw_temp.value;
      reply += String("\nТемпература на улице = ") + vars.outside_temp.value;

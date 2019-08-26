@@ -70,6 +70,7 @@ static struct MAIN_VARIABLES {
   VARIABLE<int>  DHWsetpLow;
   VARIABLE<int>  MaxCHsetpUpp;
   VARIABLE<int>  MaxCHsetpLow;
+  VARIABLE<bool> dump_request = VARIABLE<bool>(false); 
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
 } vars;  // Static declartion of variables we need
 

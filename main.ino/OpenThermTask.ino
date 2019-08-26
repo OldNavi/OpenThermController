@@ -134,6 +134,199 @@ unsigned long sendRequest(unsigned long request) {
     ot.begin(handleInterrupt,responseCallback);
   }
 
+void printRequestDetail(OpenThermMessageID id,unsigned long request, unsigned long response)
+{
+    Serial.print("ID ");
+    Serial.print(id);
+    Serial.print(" Request - " );
+    Serial.print(request,HEX);
+    Serial.print(" Response - ");
+    Serial.print(response,HEX);
+    Serial.print(" Status: ");
+    Serial.println(ot.statusToString(ot.getLastResponseStatus()));
+}
+
+void testSupportedIDs()
+{
+  // Basic
+    unsigned long request;
+    unsigned long response;
+    OpenThermMessageID id;
+    //ASFlags
+    id = OpenThermMessageID::ASFflags;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //TrOverride
+    id = OpenThermMessageID::TrOverride;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+    
+    //TSP
+    id = OpenThermMessageID::TSP;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //TSPindexTSPvalue
+    id = OpenThermMessageID::TSPindexTSPvalue;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //FHBsize
+    id = OpenThermMessageID::FHBsize;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //FHBindexFHBvalue
+    id = OpenThermMessageID::FHBindexFHBvalue;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //MaxCapacityMinModLevel
+    id = OpenThermMessageID::MaxCapacityMinModLevel;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);    
+
+    //TrSet
+    id = OpenThermMessageID::TrSet;
+    request = ot.buildRequest(OpenThermRequestType::WRITE, id, ot.temperatureToData(21));
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);   
+
+    //RelModLevel
+    id = OpenThermMessageID::RelModLevel;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response); 
+
+    //CHPressure
+    id = OpenThermMessageID::CHPressure;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);  
+
+    //DHWFlowRate
+    id = OpenThermMessageID::DHWFlowRate;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);  
+
+    //DayTime
+    id = OpenThermMessageID::DayTime;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);     
+
+    //Date
+    id = OpenThermMessageID::Date;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);     
+
+    //Year
+    id = OpenThermMessageID::Year;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //TrSetCH2
+    id = OpenThermMessageID::TrSetCH2;
+    request = ot.buildRequest(OpenThermRequestType::WRITE, id, ot.temperatureToData(21));
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);     
+
+    
+    //Tr
+    id = OpenThermMessageID::Tr;
+    request = ot.buildRequest(OpenThermRequestType::WRITE, id, ot.temperatureToData(21));
+    response = sendRequest(request);
+    printRequestDetail(id,request,response); 
+
+    //Tret
+    id = OpenThermMessageID::Tret;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //Texhaust
+    id = OpenThermMessageID::Texhaust;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //Hcratio
+    id = OpenThermMessageID::Hcratio;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);  
+
+    //RemoteOverrideFunction
+    id = OpenThermMessageID::RemoteOverrideFunction;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response); 
+
+    //OEMDiagnosticCode
+    id = OpenThermMessageID::OEMDiagnosticCode;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);   
+
+    //BurnerStarts
+    id = OpenThermMessageID::BurnerStarts;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //CHPumpStarts
+    id = OpenThermMessageID::CHPumpStarts;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);   
+
+    //DHWPumpValveStarts
+    id = OpenThermMessageID::DHWPumpValveStarts;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response); 
+
+    //DHWBurnerStarts
+    id = OpenThermMessageID::DHWBurnerStarts;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);  
+
+    //BurnerOperationHours 
+    id = OpenThermMessageID::BurnerOperationHours;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //CHPumpOperationHours
+    id = OpenThermMessageID::CHPumpOperationHours;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);
+
+    //DHWPumpValveOperationHours
+    id = OpenThermMessageID::DHWPumpValveOperationHours;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);  
+
+    //DHWBurnerOperationHours
+    id = OpenThermMessageID::DHWBurnerOperationHours;
+    request = ot.buildRequest(OpenThermRequestType::READ, id, 0);
+    response = sendRequest(request);
+    printRequestDetail(id,request,response);          
+}
 
   // Main OpenTherm loop
   void loop()
@@ -159,6 +352,12 @@ unsigned long sendRequest(unsigned long request) {
     ts = new_ts;
     OpenThermResponseStatus responseStatus = ot.getLastResponseStatus();
 
+
+    if(vars.dump_request.value)
+    {
+      testSupportedIDs();
+      vars.dump_request.value = false;
+    }
         if (responseStatus == OpenThermResponseStatus::SUCCESS) {
           //=======================================================================================
           // Эта группа элементов данных определяет информацию о конфигурации как на ведомых, так 
@@ -239,7 +438,7 @@ unsigned long sendRequest(unsigned long request) {
 
           
           if (responseStatus == OpenThermResponseStatus::SUCCESS && vars.isFault.value) {
-            vars.dhw_temp.setValue(getFaultCode());
+            vars.fault_code.setValue(getFaultCode());
           }
 
   // Верхняя и нижняя границы для регулировки установки TdhwSet-UB / TdhwSet-LB  (t°C)
