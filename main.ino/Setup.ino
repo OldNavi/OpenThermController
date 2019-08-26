@@ -67,7 +67,7 @@ void setup_wifi() {
           vars.dhw_temp_set.prev_value = -1;
           vars.house_temp_compsenation.value = EEPROM_bool_read(HOUSE_TEMP_COMP);
           vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(OTC_COMP);
-          vars.enableOutsideTemperatureCompensation.value = EEPROM_bool_read(HEATER_ENABLE);
+          vars.enableCentralHeating.value = EEPROM_bool_read(HEATER_ENABLE);
           vars.iv_k.value = EEPROM_float_read(CURVE_K);
         } else {
           Serial.println("failed to load json config");

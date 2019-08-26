@@ -45,7 +45,7 @@ void static callback(char* topic, byte* payload, unsigned int length) {
      } 
      if(json.containsKey("heater_enable"))   
      {
-          vars.enableOutsideTemperatureCompensation.value = json["heater_enable"]|false; 
+          vars.enableCentralHeating.value = json["heater_enable"]|false; 
            EEPROM_bool_write(HEATER_ENABLE,vars.enableCentralHeating.value);
      } 
      if(json.containsKey("curve_ratio"))   
