@@ -216,7 +216,7 @@ void checkAndSaveConfig()
      reply += String("\nГВС встроен  = ") + vars.dhw_present.value;
      reply += String("\nТип управления = ") + (vars.control_type.value ? String("On/Off") : String("Модуляция"));
      reply += String("\nГВС  = ") + (vars.dhw_tank_present.value ? String("бак") : String("проточная"));
-     reply += String("\nНаклон эквитермечской кривой  = ") + vars.iv_k.value;
+     reply += String("\nНаклон эквитермической кривой  = ") + vars.iv_k.value;
      reply += String("\n ----------- Статусы ---------------");  
      reply += String("\nОшибка котла  = ") + vars.isFault.value;
      reply += String("\nКод ошибки  = E") + vars.fault_code.value;  

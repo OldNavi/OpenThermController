@@ -84,7 +84,56 @@ float pid(float sp, float pv, float pv_last, float& ierr, float dt) {
   DEBUG.println("Выхов ПИД регулятора = " + String(op));
   return op;
 }
+//===================================================================================================================
+//       Вычисляем температуру контура отпления, эквитермические кривые
+//===================================================================================================================
+float curve(float sp, float pv) {
 
+    float a = (-0.21 * vars.iv_k.value) - 0.06;                     // a = -0,21k — 0,06
+    float b = (6.04 * vars.iv_k.value) + 1.98;                      // b = 6,04k + 1,98
+    float c = (-5.06 * vars.iv_k.value) + 18.06;                    // с = -5,06k + 18,06
+    float x = (-0.2 * vars.outside_temp.value) + 5;                       // x = -0.2*t1 + 5
+    float temp_n = (a * x * x) + (b * x) + c;            // Tn = ax2 + bx + c
+    // Расчетная температура конура отопления
+    float op = temp_n;                 // T = Tn
+    // Ограничиваем температуру для ID-1
+    float ophi = vars.MaxCHsetpUpp.value > 0 ? vars.MaxCHsetpUpp.value : 100;
+    float oplo = 0;
+    op = max(oplo, min(ophi, op));
+    return op;
+  
+}
+//===================================================================================================================
+//       Вычисляем температуру контура отпления, эквитермические кривые с учётом влияния температуры в помещении
+//===================================================================================================================
+float curve2(float sp, float pv) {
+
+    // Расчет поправки (ошибки) термостата
+    float error = sp - pv;                               // Tt = (Tu — T2) × 5
+    // ограничиваем влияние термостата
+    if ( error > 2) {
+      error = 2;
+    }
+    if (error < -2) {
+      error = -2;
+    }
+    float temp_t = error * 3.0;
+    // Поправка на желаемую комнатную температуру
+    float temp_k = (sp - 20) * 3.0;                  // Tk = (Tu — 20) × 5
+    // Температура контура отопления в зависимости от наружной температуры
+    float a = (-0.21 * vars.iv_k.value) - 0.06;                     // a = -0,21k — 0,06
+    float b = (6.04 * vars.iv_k.value) + 1.98;                      // b = 6,04k + 1,98
+    float c = (-5.06 * vars.iv_k.value) + 18.06;                    // с = -5,06k + 18,06
+    float x = (-0.2 * vars.outside_temp.value) + 5;                       // x = -0.2*t1 + 5
+    float temp_n = (a * x * x) + (b * x) + c;            // Tn = ax2 + bx + c
+    // Расчетная температура конура отопления
+    float op = temp_n + temp_k + temp_t;                 // T = Tn + Tk + Tt
+    // Ограничиваем температуру для ID-1
+    float ophi = vars.MaxCHsetpUpp.value > 0 ? vars.MaxCHsetpUpp.value : 100;
+    float oplo = 0;
+    op = max(oplo, min(ophi, op));
+    return op;
+}
 
 float getBoilerTemp() {
   unsigned long response = sendRequest(ot.buildGetBoilerTemperatureRequest());
@@ -419,9 +468,19 @@ void testSupportedIDs()
                   break;
               case 1: 
                   // эквитермические кривые
+                  {
+                  float op = curve(vars.heat_temp_set.value, vars.house_temp.value);
+                  unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
+                  sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+                  }
                   break;
               case 2: 
                   // эквитермические кривые с учетом температуры
+                  {
+                  float op = curve2(vars.heat_temp_set.value, vars.house_temp.value);
+                  unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
+                  sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+                  }
                   break;
               default:
                   break;    
