@@ -50,7 +50,8 @@ void static callback(char* topic, byte* payload, unsigned int length) {
      if(json.containsKey("debug"))       
           debug = json["debug"]|false;      
      if(json.containsKey("dump"))       
-          vars.dump_request.value = json["dump"]|false;  
+          vars.dump_request.value = json["dump"]|false; 
+    handleUpdateToMQTT(true);
   }
 }
 
