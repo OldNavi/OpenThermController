@@ -116,8 +116,9 @@ void checkAndSaveConfig()
       // publisish all MQTT stuff
       mqtt_ts = mqtt_new_ts;
       String payload;
-      DynamicJsonDocument json(JSON_OBJECT_SIZE(20));
+      StaticJsonDocument<JSON_OBJECT_SIZE(20)> json;
       json["mode"] = vars.heater_mode.value;
+      json["status"] = (vars.online.value ? String("online") : String("offline"));
       json["heater_temp_set"] = vars.heat_temp_set.value;
       json["dhw_temp_set"] = vars.dhw_temp_set.value;
       json["heater_temp"] = vars.heat_temp.value;
@@ -173,6 +174,7 @@ void checkAndSaveConfig()
   }
    static void handleRoot() {
      String reply = "Режим работы = " + heaterMode();
+     reply += String("\nСтатус = ") + (vars.online.value ? String("онлайн") : String("оффлайн"));
      reply += String("\nГорелка включена = ") + vars.isFlameOn.value;
      reply += String("\nОшибка котла  = ") + vars.isFault.value;
      reply += String("\nОгонь включен  = ") + vars.isFlameOn.value;

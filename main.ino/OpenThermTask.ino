@@ -1,4 +1,6 @@
 // OpenTherm handling task class
+#define TIMEOUT_TRESHOLD 10
+static unsigned long timeout_count = 0;
 
 class OTHandleTask: public Task {
 
@@ -27,6 +29,21 @@ void static responseCallback(unsigned long result,OpenThermResponseStatus status
   DEBUG.println("Status of response " + String(status));
   DEBUG.println("Result of response " + String(result));
   response = result;
+  switch(status) {
+  case OpenThermResponseStatus::TIMEOUT:
+     timeout_count++;
+     if(timeout_count > TIMEOUT_TRESHOLD) {
+      vars.online.value = false;
+      timeout_count = TIMEOUT_TRESHOLD;
+     }
+     break;
+  case OpenThermResponseStatus::SUCCESS:
+     timeout_count = 0;   
+     vars.online.value = true;
+     break;
+  default:
+     break;
+  }     
 }
   protected:
 
@@ -76,7 +93,7 @@ float getBoilerTemp() {
 float getDHWTemp() {
   unsigned long request26 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0);
   unsigned long respons26 = sendRequest(request26);
-  return ot.temperatureToData(respons26);
+  return ot.getTemperature(respons26);
 }
 float getOutsideTemp() {
   unsigned long request27 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0);
@@ -124,22 +141,9 @@ unsigned long sendRequest(unsigned long request) {
       new_ts = millis();
   if (new_ts - ts > 1000) {
     
-      switch(vars.heater_mode.value) {
-        case 0: // All off
-          vars.enableCentralHeating.value = false;
-          vars.enableHotWater.value = false;
-          break;
-        case 1 : // Summer mode
-          vars.enableCentralHeating.value = false;
-          vars.enableHotWater.value = true; 
-          break;
-        case 2:
-          vars.enableCentralHeating.value = true;
-          vars.enableHotWater.value = true; 
-          break;
-        default: // No changes
-          break;                    
-      }
+
+      vars.enableCentralHeating.value = vars.heater_mode.value & 0x2;
+      vars.enableHotWater.value = vars.heater_mode.value & 0x1;
     
     unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
     unsigned long statusResponse = sendRequest(statusRequest);
@@ -198,28 +202,24 @@ unsigned long sendRequest(unsigned long request) {
         }
 
         if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-          if(vars.heater_mode.value == 2) {
            if(vars.house_temp_compsenation.value)
            {
             float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
             pv_last =  vars.house_temp.value;
             unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
-           } else if(vars.heat_temp_set.isChanged()) 
+           } else 
             {
                   unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);
                   sendRequest(setTempRequest); 
             }
           }
 
-       }
+       
 
           if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-            if(vars.heater_mode.value == 2 || vars.heater_mode.value == 1) 
-            {
-            if(vars.dhw_temp_set.isChanged()) 
               setDHWTemp(vars.dhw_temp_set.value);        // Записываем заданную температуру ГВС
-            }
+
           }
 
 

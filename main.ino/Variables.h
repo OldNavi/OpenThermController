@@ -39,6 +39,7 @@ template<typename V> struct VARIABLE {
 };
 
 static struct MAIN_VARIABLES {
+  VARIABLE<bool>  online = VARIABLE<bool>(false);
   VARIABLE<int>   heater_mode;
   VARIABLE<float> heat_temp_set;
   VARIABLE<float> house_temp;
