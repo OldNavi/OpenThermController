@@ -107,9 +107,7 @@ float setDHWTemp(float val) {
 unsigned int getFaultCode() {
   unsigned long request5 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0);
   unsigned long respons5 = sendRequest(request5);
-  uint8_t dataValue5 = respons5 & 0xFF;
-  unsigned result5 = dataValue5;
-  return result5;
+  return respons5 & 0xFFFF;
 }
 
 
@@ -340,17 +338,19 @@ void testSupportedIDs()
     
     unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
     unsigned long statusResponse = sendRequest(statusRequest);
+    OpenThermResponseStatus responseStatus = ot.getLastResponseStatus();
+    if (responseStatus == OpenThermResponseStatus::SUCCESS) {
     vars.isHeatingEnabled.value = ot.isCentralHeatingActive(statusResponse);
     vars.isDHWenabled.value = ot.isHotWaterActive(statusResponse);
     vars.isCoolingEnabled.value = ot.isCoolingActive(statusResponse);
     vars.isFlameOn = ot.isFlameOn(statusResponse);
     vars.isFault = ot.isFault(statusResponse);
     vars.isDiagnostic = ot.isDiagnostic(statusResponse);
-
+    }
 
     dt = (new_ts - ts) / 1000;
     ts = new_ts;
-    OpenThermResponseStatus responseStatus = ot.getLastResponseStatus();
+    
 
 
     if(vars.dump_request.value)
@@ -358,7 +358,7 @@ void testSupportedIDs()
       testSupportedIDs();
       vars.dump_request.value = false;
     }
-        if (responseStatus == OpenThermResponseStatus::SUCCESS) {
+        
           //=======================================================================================
           // Эта группа элементов данных определяет информацию о конфигурации как на ведомых, так 
           // и на главных сторонах. Каждый из них имеет группу флагов конфигурации (8 бит) 
@@ -372,13 +372,16 @@ void testSupportedIDs()
           unsigned long response3 = sendRequest(request3);
           uint8_t SlaveMemberIDcode =  response3 >> 0 & 0xFF;
           uint8_t flags = (response3 & 0xFFFF) >> 8 & 0xFF;
+          responseStatus = ot.getLastResponseStatus();
+          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
           vars.dhw_present.value = flags & 0x01;  
           vars.control_type.value = flags & 0x02;  
           vars.cooling_present.value = flags & 0x04;
           vars.dhw_tank_present.value = flags & 0x08; 
           vars.pump_control_present.value = flags & 0x10; 
           vars.ch2_present.value = flags & 0x20; 
-
+          }
+          
           unsigned long request2 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MConfigMMemberIDcode, SlaveMemberIDcode);
           unsigned long respons2 = sendRequest(request2);
           
@@ -395,12 +398,13 @@ void testSupportedIDs()
           uint8_t dataValue126_num = respons126 & 0xFF;
           unsigned result126_type = dataValue126_type / 256;
           unsigned result126_num = dataValue126_num;
-
+        responseStatus = ot.getLastResponseStatus();
+        if (responseStatus == OpenThermResponseStatus::SUCCESS) {
           DEBUG.println("Тип и версия термостата: тип " + String(result126_type) + ", версия " + String(result126_num));
           DEBUG.println("Тип и версия котла: тип " + String(result127_type) + ", версия " + String(result127_num));
         }
 
-        if (responseStatus == OpenThermResponseStatus::SUCCESS) {
+       
            if(vars.house_temp_compsenation.value)
            {
             float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
@@ -412,50 +416,66 @@ void testSupportedIDs()
                   unsigned long  setTempRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);
                   sendRequest(setTempRequest); 
             }
-          }
+          
 
        
 
-          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
               setDHWTemp(vars.dhw_temp_set.value);        // Записываем заданную температуру ГВС
 
-          }
+       
 
 
 
+
+            float temp = getOutsideTemp();
+            responseStatus = ot.getLastResponseStatus();
           if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-            vars.outside_temp.setValue(getOutsideTemp());
+            vars.outside_temp.setValue(temp);
           }
 
-
+          temp = getBoilerTemp();
+          responseStatus = ot.getLastResponseStatus();
           if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-            vars.heat_temp.setValue( getBoilerTemp());
+            vars.heat_temp.setValue( temp);
           }
-
+          temp = getDHWTemp();
+          responseStatus = ot.getLastResponseStatus();
           if (responseStatus == OpenThermResponseStatus::SUCCESS) {
-            vars.dhw_temp.setValue(getDHWTemp());
+            vars.dhw_temp.setValue(temp);
           }
 
-          
+          unsigned int code = getFaultCode();
+          responseStatus = ot.getLastResponseStatus();
           if (responseStatus == OpenThermResponseStatus::SUCCESS && vars.isFault.value) {
-            vars.fault_code.setValue(getFaultCode());
+              uint8_t flags = code >> 8;
+              vars.service_required.value = flags & 0x01;
+              vars.lockout_reset.value = flags & 0x02;
+              vars.low_water_pressure.value = flags & 0x04;
+              vars.gas_fault.value = flags & 0x08;
+              vars.air_fault.value = flags & 0x10;
+              vars.water_overtemp.value = flags & 0x20;
+              vars.fault_code.setValue(code & 0xFF);
           }
 
+        
   // Верхняя и нижняя границы для регулировки установки TdhwSet-UB / TdhwSet-LB  (t°C)
-          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
+
             unsigned long request48 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0);
             unsigned long respons48 = sendRequest(request48);
             uint16_t dataValue48 = respons48 & 0xFFFF;
+            responseStatus = ot.getLastResponseStatus();
+            if (responseStatus == OpenThermResponseStatus::SUCCESS) {
             vars.DHWsetpUpp.value = dataValue48 / 256;
             uint8_t dataValue48_ = respons48 & 0xFF;
             vars.DHWsetpLow.value = dataValue48_;
           }
 
   // Верхняя и нижняя границы для регулировки MaxTSet-UB / MaxTSet-LB (t°C)
-          if (responseStatus == OpenThermResponseStatus::SUCCESS) {
             unsigned long request49 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::MaxTSetUBMaxTSetLB, 0);
             unsigned long respons49 = sendRequest(request49);
             uint16_t dataValue49 = respons49 & 0xFFFF;
+            responseStatus = ot.getLastResponseStatus();
+            if (responseStatus == OpenThermResponseStatus::SUCCESS) {
             vars.MaxCHsetpUpp.value = dataValue49 / 256;
             uint8_t dataValue49_ = respons49 & 0xFF;
             vars.MaxCHsetpLow.value = dataValue49_;

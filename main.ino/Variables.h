@@ -46,7 +46,7 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> house_temp_compsenation = VARIABLE<bool>(true);
   VARIABLE<float> heat_temp;
   VARIABLE<float> dhw_temp;
-  VARIABLE<unsigned long> fault_code;
+  VARIABLE<unsigned int> fault_code;
   VARIABLE<float> outside_temp;
   VARIABLE<float> dhw_temp_set = VARIABLE<float>(50.0); // Температура воды по умолчанию
   VARIABLE<bool> isHeatingEnabled;
@@ -55,6 +55,15 @@ static struct MAIN_VARIABLES {
   VARIABLE<bool> isFault;
   VARIABLE<bool> isFlameOn;
   VARIABLE<bool> isDiagnostic;
+  VARIABLE<bool> service_required = VARIABLE<bool>(false);
+  VARIABLE<bool> lockout_reset = VARIABLE<bool>(false);
+  VARIABLE<bool> low_water_pressure = VARIABLE<bool>(false);
+  VARIABLE<bool> gas_fault = VARIABLE<bool>(false);
+  VARIABLE<bool> air_fault = VARIABLE<bool>(false);
+  VARIABLE<bool> water_overtemp = VARIABLE<bool>(false);
+
+
+  
   VARIABLE<bool> dhw_present;   // false - not present, true - present
   VARIABLE<bool> control_type;  // false - modulation, true - on/off control
   VARIABLE<bool> cooling_present; // false - no, true - yes

@@ -120,7 +120,7 @@ void checkAndSaveConfig()
       // publisish all MQTT stuff
       mqtt_ts = mqtt_new_ts;
       String payload;
-      StaticJsonDocument<JSON_OBJECT_SIZE(20)> json;
+      StaticJsonDocument<JSON_OBJECT_SIZE(26)> json;
       json["mode"] = vars.heater_mode.value;
       json["heater_temp_set"] = vars.heat_temp_set.value;
       json["dhw_temp_set"] = vars.dhw_temp_set.value;
@@ -136,6 +136,12 @@ void checkAndSaveConfig()
       json["dhw"] = vars.isDHWenabled.value;
       json["cooling"] = vars.isCoolingEnabled.value;
       json["diagnostic"] = vars.isDiagnostic.value;
+      json["service_req"] = vars.service_required.value;
+      json["blor_enabled"] = vars.lockout_reset.value;
+      json["low_water_pressure"] = vars.low_water_pressure.value;
+      json["gas_fault"] = vars.gas_fault.value;
+      json["air_fault"] = vars.air_fault.value;
+      json["water_overtemp"] = vars.water_overtemp.value;
       serializeJson(json,payload);
       int msg_size = payload.length();
       DEBUG.println((vars.mqttTopicPrefix.value+"/status").c_str());
@@ -165,10 +171,10 @@ void checkAndSaveConfig()
           return "выключен";
           break;     
       case 1:
-          return "лето";
+          return "ГВС";
           break;
       case 2:
-          return "зима";
+          return "Отопление и ГВС";
           break; 
       default:
           return "";          
@@ -179,8 +185,6 @@ void checkAndSaveConfig()
      String reply = "Режим работы = " + heaterMode();
      reply += String("\nСтатус = ") + (vars.online.value ? String("онлайн") : String("оффлайн"));
      reply += String("\nГорелка включена = ") + vars.isFlameOn.value;
-     reply += String("\nОшибка котла  = ") + vars.isFault.value;
-     reply += String("\nКод ошибки  = ") + vars.fault_code.value;
      reply += String("\nТемпература котла = ") + vars.heat_temp.value;
      reply += String("\nТемпература ГВС = ") + vars.dhw_temp.value;
      reply += String("\nТемпература на улице = ") + vars.outside_temp.value;
@@ -199,7 +203,16 @@ void checkAndSaveConfig()
      reply += String("\nГВС встроен  = ") + vars.dhw_present.value;
      reply += String("\nТип управления = ") + (vars.control_type.value ? String("On/Off") : String("Модуляция"));
      reply += String("\nГВС  = ") + (vars.dhw_tank_present.value ? String("бак") : String("проточная"));
-
+     reply += String("\n ----------- Статусы ---------------");  
+     reply += String("\nОшибка котла  = ") + vars.isFault.value;
+     reply += String("\nКод ошибки  = E") + vars.fault_code.value;  
+     reply += String("\nСервис требуется  = ") + (vars.service_required.value ? String("да") : String("нет"));
+     reply += String("\nУдаленный сброс разрешен  = ") + (vars.lockout_reset.value ? String("да") : String("нет"));
+     reply += String("\nОшибка низкого давления воды  = ") + (vars.low_water_pressure.value ? String("да") : String("проточная"));
+     reply += String("\nОшибка по газу/огню  = ") + (vars.gas_fault.value ? String("да") : String("нет"));
+     reply += String("\nОшибка по тяге воздуха  = ") + (vars.air_fault.value ? String("да") : String("нет"));
+     reply += String("\nПерегрев теплоносителя = ") + (vars.water_overtemp.value ? String("да") : String("нет"));
+                              
      httpServer.sendHeader("Content-Type", "text/plain; charset=utf-8");
      httpServer.send(200, "text/plain", reply);
    }
