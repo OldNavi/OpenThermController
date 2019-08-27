@@ -10,48 +10,46 @@ class MainTaskClass: public Task {
   protected:
 
 
-void static callback(char* topic, byte* payload, unsigned int length) {
-  payload[length] = '\0';
-  String strTopic = String(topic);
-  String strPayload = String((char*)payload);
-  DEBUG.println("MQTT received = " + strPayload);
-  DynamicJsonDocument json(JSON_OBJECT_SIZE(20));
-  deserializeJson(json,strPayload);
+bool static handleIncomingJson(String payload) {
+  
+  StaticJsonDocument<JSON_OBJECT_SIZE(20)> json;
+  deserializeJson(json,payload);
+  bool needWrite = false;
   if (!json.isNull()) {
     if(json.containsKey("mode"))
     {
           vars.mode.value = json["mode"]|0;
-          EEPROM_long_write(MODE_VAR,vars.mode.value);
+          needWrite = true;
     }
     if(json.containsKey("heater_temp"))
     {
           vars.heat_temp_set.value = json["heater_temp"]|30.0;
-          EEPROM_float_write(HEATER_TEMP_SET,vars.heat_temp_set.value);
+          needWrite = true;
     }
     if(json.containsKey("dhw_temp"))
     {
           vars.dhw_temp_set.value = json["dhw_temp"]|50.0;
-          EEPROM_float_write(BOILER_TEMP_SET,vars.dhw_temp_set.value);
+          needWrite = true;
     }   
     if(json.containsKey("house_temp_comp"))      
     {
           vars.house_temp_compsenation.value = json["house_temp_comp"]|true;  
-          EEPROM_bool_write(HOUSE_TEMP_COMP,vars.house_temp_compsenation.value);
+          needWrite = true;
     }
      if(json.containsKey("outside_temp_comp"))   
      {
           vars.enableOutsideTemperatureCompensation.value = json["outside_temp_comp"]|true; 
-           EEPROM_bool_write(OTC_COMP,vars.enableOutsideTemperatureCompensation.value);
+          needWrite = true;
      } 
      if(json.containsKey("heater_enable"))   
      {
           vars.enableCentralHeating.value = json["heater_enable"]|false; 
-           EEPROM_bool_write(HEATER_ENABLE,vars.enableCentralHeating.value);
+          needWrite = true;
      } 
      if(json.containsKey("curve_ratio"))   
      {
           vars.iv_k.value = json["curve_ratio"]|1.5f; 
-           EEPROM_float_write(CURVE_K,vars.iv_k.value);
+          needWrite = true;
      } 
      if(json.containsKey("house_temp"))   
           vars.house_temp.value = json["house_temp"]|21.0;  
@@ -61,8 +59,23 @@ void static callback(char* topic, byte* payload, unsigned int length) {
           debug = json["debug"]|false;      
      if(json.containsKey("dump"))       
           vars.dump_request.value = json["dump"]|false; 
-    handleUpdateToMQTT(true);
+    if(needWrite) {
+      vars.write();
+    }      
+  } else
+  {
+    return false;
   }
+  return true;
+}
+
+void static callback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0';
+  String strTopic = String(topic);
+  String strPayload = String((char*)payload);
+  DEBUG.println("MQTT received = " + strPayload);
+  handleUpdateToMQTT(handleIncomingJson(strPayload));
+  
 }
 
 void reconnect() {
@@ -118,16 +131,9 @@ void checkAndSaveConfig()
   }
 }
 
-
-
-  void static handleUpdateToMQTT(bool now)
-  {
-    mqtt_new_ts = millis();
-    if((mqtt_new_ts - mqtt_ts > MQTT_polling_interval) || now) {
-      // publisish all MQTT stuff
-      mqtt_ts = mqtt_new_ts;
-      String payload;
-      StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
+  String static handleOutJson() {
+    String payload;
+    StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
       json["mode"] = vars.mode.value;
       json["heater_temp_set"] = vars.heat_temp_set.value;
       json["heater_enable"] = vars.enableCentralHeating.value;
@@ -156,6 +162,17 @@ void checkAndSaveConfig()
       json["heat_min_limit"] = vars.MaxCHsetpLow.value;
       json["curve_ratio"] = vars.iv_k.value;
       serializeJson(json,payload);
+      return payload;
+  }
+
+  void static handleUpdateToMQTT(bool now)
+  {
+    mqtt_new_ts = millis();
+    if((mqtt_new_ts - mqtt_ts > MQTT_polling_interval) || now) {
+      // publisish all MQTT stuff
+      mqtt_ts = mqtt_new_ts;
+      String payload = handleOutJson();
+      
       int msg_size = payload.length();
       DEBUG.println((vars.mqttTopicPrefix.value+"/status").c_str());
       DEBUG.println(payload);
@@ -231,12 +248,26 @@ void checkAndSaveConfig()
      httpServer.send(200, "text/plain", reply);
    }
   
+  static void handleGetStatus(){
+         httpServer.sendHeader("Content-Type", "application/json; charset=utf-8");
+     httpServer.send(200, "text/plain", handleOutJson());
+  }
+
+  static void handlePostCommand()
+  {
+    handleUpdateToMQTT(handleIncomingJson(String( httpServer.arg("plain"))));
+   httpServer.send(204, "text/plain", ""); 
+  }
+
    void setup() {
 
     MDNS.begin(host);
 
     httpUpdater.setup(&httpServer);
     httpServer.on("/",handleRoot);
+    httpServer.on("/state",handleGetStatus);
+    httpServer.on("/command",HTTP_POST,handlePostCommand);
+
     httpServer.begin();
 
   MDNS.addService("http", "tcp", 80);
