@@ -23,6 +23,7 @@
 #define CURVE_K HEATER_ENABLE + 4
 #define MONITOR CURVE_K + 1
 #define POLL_INTERVAL MONITOR + 4
+#define POST_REC POLL_INTERVAL  + 1
 
 
 // EEPROM_Rotate EEPROMr;
@@ -73,6 +74,7 @@ static struct MAIN_VARIABLES
   VARIABLE<bool> water_overtemp = VARIABLE<bool>(false);
   VARIABLE<float> iv_k = VARIABLE<float>(1.5f);
   VARIABLE<bool> monitor_only = VARIABLE<bool>(false);
+  VARIABLE<bool> post_recirculation  = VARIABLE<bool>(true);
   VARIABLE<bool> dhw_present;          // false - not present, true - present
   VARIABLE<bool> control_type;         // false - modulation, true - on/off control
   VARIABLE<bool> cooling_present;      // false - no, true - yes
@@ -129,6 +131,7 @@ public:
     EEPROM_write(CURVE_K, iv_k.addr(), iv_k.size());
     EEPROM_write(MONITOR, monitor_only.addr(), monitor_only.size());
     EEPROM_write(POLL_INTERVAL, MQTT_polling_interval.addr(), MQTT_polling_interval.size());
+    EEPROM_write(POST_REC, post_recirculation.addr(), post_recirculation.size());
     commit();
   }
 
@@ -148,6 +151,7 @@ public:
     EEPROM_read(CURVE_K, iv_k.addr(), iv_k.size());
     EEPROM_read(MONITOR, monitor_only.addr(), monitor_only.size());
     EEPROM_read(POLL_INTERVAL, MQTT_polling_interval.addr(), MQTT_polling_interval.size());
+    EEPROM_read(POST_REC, post_recirculation.addr(), post_recirculation.size());
 
   }
 

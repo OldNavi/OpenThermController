@@ -10,6 +10,7 @@ private:
   unsigned long send_ts = 0;
   unsigned long send_newts = 0;
   unsigned long loop_counter = 0;
+  bool  recirculation = true;
   float
       pv_last = 0, // предыдущая температура
       ierr = 0,    // интегральная погрешность
@@ -401,7 +402,7 @@ protected:
       // vars.enableCentralHeating.value = vars.heater_mode.value & 0x2;
       // vars.enableHotWater.value = vars.heater_mode.value & 0x1;
 
-      unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
+      unsigned long statusRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value & recirculation, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
       unsigned long statusResponse = sendRequest(statusRequest);
       OpenThermResponseStatus responseStatus = ot.getLastResponseStatus();
       if (responseStatus == OpenThermResponseStatus::SUCCESS)
@@ -482,6 +483,10 @@ protected:
             float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
             pv_last = vars.house_temp.value;
             vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }
@@ -491,6 +496,10 @@ protected:
           {
             float op = curve(vars.heat_temp_set.value, vars.house_temp.value);
             vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }
@@ -500,6 +509,10 @@ protected:
           {
             float op = curve2(vars.heat_temp_set.value, vars.house_temp.value);
             vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }
@@ -507,11 +520,13 @@ protected:
         default:
           break;
         }
+        // if(vars.control_set.value < vars.heat_temp_set.value)
       }
       else
       {
         unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);
         sendRequest(setTempRequest);
+        recirculation = true; // No control over recirculation
       }
 
       setDHWTemp(vars.dhw_temp_set.value); // Записываем заданную температуру ГВС
