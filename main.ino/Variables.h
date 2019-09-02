@@ -111,7 +111,7 @@ public:
   MAIN_VARIABLES()
   {
     eprom.size(4);
-    eprom.begin(32);
+    eprom.begin(48);
   }
 
   void write()
