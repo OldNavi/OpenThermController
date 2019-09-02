@@ -156,7 +156,7 @@ protected:
   String static handleOutJson()
   {
     String payload;
-    StaticJsonDocument<JSON_OBJECT_SIZE(31)> json;
+    StaticJsonDocument<JSON_OBJECT_SIZE(32)> json;
     json["mode"] = vars.mode.value;
     json["heater_temp_set"] = vars.heat_temp_set.value;
     json["control_set"] = vars.control_set.value;
@@ -165,6 +165,7 @@ protected:
     json["heater_temp"] = vars.heat_temp.value;
     json["dhw_temp"] = vars.dhw_temp.value;
     json["house_temp_comp"] = vars.house_temp_compsenation.value;
+    json["house_temp"] = vars.house_temp.value;
     json["outside_temp_comp"] = vars.enableOutsideTemperatureCompensation.value;
     json["outside_temp"] = vars.outside_temp.value;
     json["fault"] = vars.isFault.value;
