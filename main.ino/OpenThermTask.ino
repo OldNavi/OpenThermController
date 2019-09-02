@@ -481,6 +481,7 @@ protected:
           {
             float op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
             pv_last = vars.house_temp.value;
+            vars.control_set.value = op;
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }
@@ -489,6 +490,7 @@ protected:
           // эквитермические кривые
           {
             float op = curve(vars.heat_temp_set.value, vars.house_temp.value);
+            vars.control_set.value = op;
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }
@@ -497,6 +499,7 @@ protected:
           // эквитермические кривые с учетом температуры
           {
             float op = curve2(vars.heat_temp_set.value, vars.house_temp.value);
+            vars.control_set.value = op;
             unsigned long setTempRequest = ot.buildSetBoilerTemperatureRequest(op);
             sendRequest(setTempRequest); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
           }

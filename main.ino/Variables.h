@@ -57,6 +57,7 @@ static struct MAIN_VARIABLES
   VARIABLE<unsigned int> fault_code;
   VARIABLE<float> outside_temp;
   VARIABLE<float> dhw_temp_set = VARIABLE<float>(50.0); // Температура воды по умолчанию
+  VARIABLE<float> control_set = VARIABLE<float>(0.0);
   VARIABLE<bool> isHeatingEnabled;
   VARIABLE<bool> isDHWenabled;
   VARIABLE<bool> isCoolingEnabled;

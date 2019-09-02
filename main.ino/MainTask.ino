@@ -151,9 +151,10 @@ protected:
   String static handleOutJson()
   {
     String payload;
-    StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
+    StaticJsonDocument<JSON_OBJECT_SIZE(31)> json;
     json["mode"] = vars.mode.value;
     json["heater_temp_set"] = vars.heat_temp_set.value;
+    json["control_set"] = vars.control_set.value;
     json["heater_enable"] = vars.enableCentralHeating.value;
     json["dhw_temp_set"] = vars.dhw_temp_set.value;
     json["heater_temp"] = vars.heat_temp.value;
@@ -250,6 +251,9 @@ protected:
     reply += String("\nКонтур отопления вкл  = ") + vars.enableCentralHeating.value;
     reply += String("\nКонтур ГВС вкл = ") + vars.enableHotWater.value;
     reply += String("\nКонтур Охлаждения вкл = ") + vars.enableCooling.value;
+    reply += String("\nКомпенсация внешней температуры  = ") + (vars.enableOutsideTemperatureCompensation.value ? String("да") : String("нет"));
+    reply += String("\nКомпенсация комнатной температуры  = ") + (vars.house_temp_compsenation.value ? String("да") : String("нет"));
+    reply += String("\nСервис требуется  = ") + (vars.service_required.value ? String("да") : String("нет"));
     reply += String("\n ----------- Конфигурация ---------------");
     reply += String("\nГраницы установок контура отопления = от ") + vars.MaxCHsetpLow.value + " до " + vars.MaxCHsetpUpp.value;
     reply += String("\nГраницы установок контура ГВС = от ") + vars.DHWsetpLow.value + " до " + vars.DHWsetpUpp.value;
