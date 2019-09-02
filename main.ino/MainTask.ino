@@ -245,6 +245,7 @@ protected:
     reply += String("\nТемпература в доме = ") + vars.house_temp.value;
     reply += String("\nУстановка котла = ") + vars.heat_temp_set.value;
     reply += String("\nУстановка ГВС = ") + vars.dhw_temp_set.value;
+    reply += String("\nУстановка Котла при регуляторах = ") + vars.control_set.value;
     reply += String("\nОтопление разрешено  = ") + vars.isHeatingEnabled.value;
     reply += String("\nГВС разрешено = ") + vars.isDHWenabled.value;
     reply += String("\nОхлаждение разрешено = ") + vars.isCoolingEnabled.value;
