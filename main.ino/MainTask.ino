@@ -2,7 +2,7 @@
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
-unsigned long MQTT_polling_interval = 30000;
+// unsigned long MQTT_polling_interval = 30000;
 unsigned long mqtt_ts = 0, mqtt_new_ts = 0;
 
 class MainTaskClass : public Task
@@ -55,6 +55,11 @@ protected:
       if (json.containsKey("monitor"))
       {
         vars.monitor_only.value = json["monitor"] | false;
+        needWrite = true;
+      }
+      if (json.containsKey("poll_interval"))
+      {
+        vars.MQTT_polling_interval.value = json["poll_interval"] | 30000;
         needWrite = true;
       }
       if (json.containsKey("house_temp"))
@@ -181,6 +186,7 @@ protected:
     json["heat_min_limit"] = vars.MaxCHsetpLow.value;
     json["curve_ratio"] = vars.iv_k.value;
     json["monitor"] = vars.monitor_only.value;
+    json["poll_interval"] = vars.MQTT_polling_interval.value;
     serializeJson(json, payload);
     return payload;
   }
@@ -188,7 +194,7 @@ protected:
   void static handleUpdateToMQTT(bool now)
   {
     mqtt_new_ts = millis();
-    if ((mqtt_new_ts - mqtt_ts > MQTT_polling_interval) || now)
+    if ((mqtt_new_ts - mqtt_ts > vars.MQTT_polling_interval.value) || now)
     {
       // publisish all MQTT stuff
       mqtt_ts = mqtt_new_ts;

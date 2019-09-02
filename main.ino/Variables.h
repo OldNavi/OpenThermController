@@ -22,6 +22,7 @@
 #define HEATER_ENABLE OTC_COMP + 1
 #define CURVE_K HEATER_ENABLE + 4
 #define MONITOR CURVE_K + 1
+#define POLL_INTERVAL MONITOR + 4
 
 
 // EEPROM_Rotate EEPROMr;
@@ -50,7 +51,7 @@ static struct MAIN_VARIABLES
   VARIABLE<bool> online = VARIABLE<bool>(false);
   VARIABLE<int> mode = VARIABLE<int>(0); // Режим регулятора 0-ПИД, 1-Эквитермические кривая ,2-уквитермическая кривая с учетом темрератур
   VARIABLE<float> heat_temp_set;
-  VARIABLE<float> house_temp;
+  VARIABLE<float> house_temp = VARIABLE<float>(24.0);
   VARIABLE<bool> house_temp_compsenation = VARIABLE<bool>(true);
   VARIABLE<float> heat_temp;
   VARIABLE<float> dhw_temp;
@@ -89,6 +90,7 @@ static struct MAIN_VARIABLES
   VARIABLE<int> MaxCHsetpLow;
   VARIABLE<bool> dump_request = VARIABLE<bool>(false);
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
+  VARIABLE<long> MQTT_polling_interval = VARIABLE<long>(30000);
 
 private:
   EEPROM_Rotate eprom;
@@ -126,6 +128,7 @@ public:
     EEPROM_write(HEATER_ENABLE, enableCentralHeating.addr(), enableCentralHeating.size());
     EEPROM_write(CURVE_K, iv_k.addr(), iv_k.size());
     EEPROM_write(MONITOR, monitor_only.addr(), monitor_only.size());
+    EEPROM_write(POLL_INTERVAL, MQTT_polling_interval.addr(), MQTT_polling_interval.size());
     commit();
   }
 
@@ -144,6 +147,8 @@ public:
     EEPROM_read(HEATER_ENABLE, enableCentralHeating.addr(), enableCentralHeating.size());
     EEPROM_read(CURVE_K, iv_k.addr(), iv_k.size());
     EEPROM_read(MONITOR, monitor_only.addr(), monitor_only.size());
+    EEPROM_read(POLL_INTERVAL, MQTT_polling_interval.addr(), MQTT_polling_interval.size());
+
   }
 
   void commit()
