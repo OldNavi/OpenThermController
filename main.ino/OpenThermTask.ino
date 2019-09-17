@@ -1,6 +1,3 @@
-#define __min(a,b) ((a)<(b)?(a):(b))
-#define __max(a,b) ((a)>(b)?(a):(b))
-
 // OpenTherm handling task class
 #define TIMEOUT_TRESHOLD 10
 static unsigned long timeout_count = 0;
@@ -104,7 +101,7 @@ public:
       WARN.println("Ошибочный ответ от котла");
       break;
     case OpenThermResponseStatus::TIMEOUT:
-      WARN.println("Таймот ответа от котла");
+      WARN.println("Таймаут ответа от котла");
       break;
       timeout_count++;
       if (timeout_count > TIMEOUT_TRESHOLD)
@@ -155,7 +152,7 @@ protected:
     {
       I = I - KI * error * dt;
       // выход регулятора, он же уставка для ID-1 (температура теплоносителя контура СО котла)
-      op = __max(oplo, __min(ophi, op));
+      op =  constrain(op, oplo, ophi);
     }
     ierr = I;
     DEBUG.println("Заданное значение температуры в помещении = " + String(sp) + " °C");
@@ -176,9 +173,7 @@ protected:
     // Расчетная температура конура отопления
     float op = temp_n; // T = Tn
     // Ограничиваем температуру для ID-1
-    float ophi = 100;
-    float oplo = 0;
-    op = __max(oplo, __min(ophi, op));
+    op =  constrain(op, 0, 100);
     return op;
   }
   //===================================================================================================================
@@ -199,9 +194,7 @@ protected:
     // Расчетная температура конура отопления
     float op = temp_n + temp_t; // T = Tn + Tk + Tt
     // Ограничиваем температуру для ID-1
-    float ophi =  100;
-    float oplo = 0;
-    op = __max(oplo, __min(ophi, op));
+    op =  constrain(op, 0, 100);
     return op;
   }
 
