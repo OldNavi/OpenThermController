@@ -53,15 +53,15 @@ public:
         break;
     case OpenThermMessageID::Tboiler:
         // Получили температуру котла
-        vars.heat_temp.setValue(ot.getTemperature(response));
+        vars.heat_temp.value = ot.getTemperature(response);
         break;
     case OpenThermMessageID::Tdhw:
         // Получили температуру ГВС
-        vars.dhw_temp.setValue(ot.getTemperature(response));
+        vars.dhw_temp.value = ot.getTemperature(response);
         break;
     case OpenThermMessageID::Toutside:
         // Получили внешнюю температуру
-        vars.outside_temp.setValue(ot.getTemperature(response));
+        vars.outside_temp.value = ot.getTemperature(response);
         break;
     case OpenThermMessageID::ASFflags:
         flags = (response & 0xFFFF) >> 8;
@@ -71,7 +71,7 @@ public:
         vars.gas_fault.value = flags & 0x08;
         vars.air_fault.value = flags & 0x10;
         vars.water_overtemp.value = flags & 0x20;
-        vars.fault_code.setValue(response & 0xFF);
+        vars.fault_code.value = response & 0xFF;
         break;
     case OpenThermMessageID::SlaveVersion:
         vars.SlaveType.value = (response & 0xFFFF) >> 8;
@@ -88,15 +88,10 @@ public:
     case OpenThermMessageID::MaxTSetUBMaxTSetLB:
         vars.MaxCHsetpUpp.value = (response & 0xFFFF) >> 8;
         vars.MaxCHsetpLow.value = response & 0xFF;
-
-
     default:
       break;
     }
-
   }
-
-  
 
   void static responseCallback(unsigned long result, OpenThermResponseStatus status)
   {
@@ -108,7 +103,6 @@ public:
     case OpenThermResponseStatus::INVALID:
       WARN.println("Ошибочный ответ от котла");
       break;
-
     case OpenThermResponseStatus::TIMEOUT:
       WARN.println("Таймот ответа от котла");
       break;
@@ -174,7 +168,6 @@ protected:
   //===================================================================================================================
   float curve(float sp, float pv)
   {
-
     float a = (-0.21 * vars.iv_k.value) - 0.06;     // a = -0,21k — 0,06
     float b = (6.04 * vars.iv_k.value) + 1.98;      // b = 6,04k + 1,98
     float c = (-5.06 * vars.iv_k.value) + 18.06;    // с = -5,06k + 18,06
@@ -193,10 +186,8 @@ protected:
   //===================================================================================================================
   float curve2(float sp, float pv)
   {
-
     // Расчет поправки (ошибки) термостата
     float error = sp - pv; // Tt = (Tu — T2) × 5
-
     float temp_t = error * 3.0;
     // Поправка на желаемую комнатную температуру
     // Температура контура отопления в зависимости от наружной температуры
@@ -225,14 +216,15 @@ protected:
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0);
     return sendRequest(request,response);
-
   }
+
   bool getOutsideTemp()
   {
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0);
     return sendRequest(request,response);
   }
+
   bool setDHWTemp(float val)
   {
     unsigned long request = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::TdhwSet, ot.temperatureToData(val));
@@ -245,7 +237,6 @@ protected:
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0);
     return sendRequest(request,response);
-
   }
 
   bool sendRequest(unsigned long request, unsigned long& response)
@@ -483,10 +474,6 @@ protected:
     new_ts = millis();
     if (new_ts - ts > 1000)
     {
-
-      // vars.enableCentralHeating.value = vars.heater_mode.value & 0x2;
-      // vars.enableHotWater.value = vars.heater_mode.value & 0x1;
-      bool requestOk = false;
       unsigned long localResponse;
       unsigned long localRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value & recirculation, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
       sendRequest(localRequest,localResponse);
@@ -527,7 +514,7 @@ protected:
       DEBUG.println("Тип и версия термостата: тип " + String(vars.MasterType.value) + ", версия " + String(vars.MasterVersion.value));
       DEBUG.println("Тип и версия котла: тип " + String(vars.SlaveType.value) + ", версия " + String(vars.SlaveVersion.value));
       
-      // Команды чтения данных ч котла
+      // Команды чтения данных котла
       getOutsideTemp();
       getBoilerTemp();
       getDHWTemp();
@@ -588,7 +575,7 @@ protected:
       }
 
       // Верхняя и нижняя границы для регулировки установки TdhwSet-UB / TdhwSet-LB  (t°C)
-     if(loop_counter <= 0) {
+      if(loop_counter <= 0) {
       localRequest = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0);
       sendRequest(localRequest, localResponse);
       
@@ -598,8 +585,8 @@ protected:
       sendRequest(localRequest, localResponse);
 
       loop_counter = 20;
-     }
-     loop_counter--;
+      }
+      loop_counter--;
     }
   }
 

@@ -40,10 +40,6 @@ struct VARIABLE
   {
     value = val;
   }
-  void setValue(V val)
-  {
-    value = val;
-  }
 };
 
 static struct MAIN_VARIABLES
@@ -110,7 +106,6 @@ public:
 
   void write()
   {
-
     // Еще не разу не писали значения по умолчанию
     eprom.write(INIT_VAR, 'O');
     eprom.write(INIT_VAR + 1, 'T');
@@ -164,7 +159,6 @@ public:
     Serial.println("Мониторинг = " + String(monitor_only.value));
     Serial.println("Цикл обновления MQTT = " + String(MQTT_polling_interval.value));
     Serial.println("Рециркуляция = " + String(post_recirculation.value));
-
   }
 
   void commit()

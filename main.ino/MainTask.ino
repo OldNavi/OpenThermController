@@ -7,12 +7,12 @@ unsigned long mqtt_ts = 0, mqtt_new_ts = 0;
 #include <netif/etharp.h>
 
 void forceARP() {
-   struct netif *netif = netif_list;
-   while (netif)
-   {
-      etharp_gratuitous(netif);
-      netif = netif->next;
-   }
+  struct netif *netif = netif_list;
+  while (netif)
+  {
+    etharp_gratuitous(netif);
+    netif = netif->next;
+  }
 }
 
 class MainTaskClass : public Task
@@ -21,7 +21,6 @@ class MainTaskClass : public Task
 protected:
   bool static handleIncomingJson(String payload)
   {
-
     StaticJsonDocument<JSON_OBJECT_SIZE(22)> json;
     deserializeJson(json, payload);
     bool needWrite = false;
@@ -123,9 +122,7 @@ protected:
       if (client.connect("opentherm", mqtt_user, mqtt_password))
       {
         Serial.println("ok");
-
         // после подключения публикуем объявление...
-
         // ... и перезаписываем
 
         client.subscribe((vars.mqttTopicPrefix.value + "/cmnd").c_str());
@@ -152,7 +149,6 @@ protected:
     {
       Serial.println("saving config");
       StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
-
       json["mqtt_server"] = mqtt_server;
       json["hostname"] = host;
       json["mqtt_port"] = mqtt_port;
@@ -326,7 +322,6 @@ protected:
     httpServer.on("/", handleRoot);
     httpServer.on("/state", handleGetStatus);
     httpServer.on("/command", HTTP_POST, handlePostCommand);
-
     httpServer.begin();
 
     MDNS.addService("http", "tcp", 80);
