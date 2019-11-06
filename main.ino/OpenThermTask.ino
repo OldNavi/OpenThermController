@@ -106,7 +106,6 @@ public:
       WARN.println("Таймаут ответа от котла");
       if(debug)
         client.publish((vars.mqttTopicPrefix.value + "/message").c_str(), "Таймаут ответа от котла");
-      break;
       timeout_count++;
       if (timeout_count > TIMEOUT_TRESHOLD)
       {
