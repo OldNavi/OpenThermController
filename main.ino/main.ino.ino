@@ -7,7 +7,6 @@
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 #include <WiFiManager.h>
-#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>

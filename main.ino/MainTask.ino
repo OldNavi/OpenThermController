@@ -81,7 +81,7 @@ protected:
         needWrite = true;
       }
       if (json.containsKey("house_temp"))
-        vars.house_temp.value = json["house_temp"] | 21.0;
+        vars.house_temp.value = json["house_temp"] | 23.0;
       if (json.containsKey("status"))
         handleUpdateToMQTT(true);
       if (json.containsKey("debug"))
