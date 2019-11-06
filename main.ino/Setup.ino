@@ -151,15 +151,6 @@ void setup_wifi()
 void setup()
 {
   pinMode(BUILTIN_LED, OUTPUT);
-  pinMode(EXTERNAL_LED, OUTPUT);
-  pinMode(EXTERNAL_LED_1, OUTPUT);
-  pinMode(EXTERNAL_LED_2, OUTPUT);
-  pinMode(EXTERNAL_LED_3, OUTPUT);
-  digitalWrite(BUILTIN_LED, LOW);
-  digitalWrite(EXTERNAL_LED, LOW);
-  digitalWrite(EXTERNAL_LED_1, LOW);
-  digitalWrite(EXTERNAL_LED_2, LOW);
-  digitalWrite(EXTERNAL_LED_3, LOW);
   Serial.begin(115200);
   setup_wifi();
 
