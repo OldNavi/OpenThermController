@@ -1,10 +1,12 @@
+#include <main.h>
+#include <netif/etharp.h>
+
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 // unsigned long MQTT_polling_interval = 30000;
 unsigned long mqtt_ts = 0, mqtt_new_ts = 0;
-#include <netif/etharp.h>
 
 void forceARP() {
   struct netif *netif = netif_list;
@@ -15,11 +17,8 @@ void forceARP() {
   }
 }
 
-class MainTaskClass : public Task
-{
 
-protected:
-  bool static handleIncomingJson(String payload)
+  bool MainTaskClass::handleIncomingJson(String payload)
   {
     StaticJsonDocument<JSON_OBJECT_SIZE(22)> json;
     deserializeJson(json, payload);
@@ -104,7 +103,7 @@ protected:
     return true;
   }
 
-  void static callback(char *topic, byte *payload, unsigned int length)
+  void  MainTaskClass::callback(char *topic, byte *payload, unsigned int length)
   {
     payload[length] = '\0';
     String strTopic = String(topic);
@@ -113,7 +112,7 @@ protected:
     handleUpdateToMQTT(handleIncomingJson(strPayload));
   }
 
-  void reconnect()
+  void MainTaskClass::reconnect()
   {
     while (!client.connected())
     {
@@ -142,7 +141,7 @@ protected:
     }
   }
 
-  void checkAndSaveConfig()
+  void MainTaskClass::checkAndSaveConfig()
   {
     //save the custom parameters to FS
     if (shouldSaveConfig)
@@ -169,7 +168,7 @@ protected:
     }
   }
 
-  String static handleOutJson()
+  String  MainTaskClass::handleOutJson()
   {
     String payload;
     StaticJsonDocument<JSON_OBJECT_SIZE(33)> json;
@@ -209,7 +208,7 @@ protected:
     return payload;
   }
 
-  void static handleUpdateToMQTT(bool now)
+  void  MainTaskClass::handleUpdateToMQTT(bool now)
   {
     mqtt_new_ts = millis();
     if ((mqtt_new_ts - mqtt_ts > vars.MQTT_polling_interval.value) || now)
@@ -241,7 +240,7 @@ protected:
     }
   }
 
-  static String heaterMode()
+  String MainTaskClass::heaterMode()
   {
     switch (vars.mode.value)
     {
@@ -259,7 +258,7 @@ protected:
     }
     return "";
   }
-  static void handleRoot()
+  void MainTaskClass::handleRoot()
   {
     String reply = "Режим работы регулятора = " + heaterMode();
     reply += String("\nСтатус = ") + (vars.online.value ? String("онлайн") : String("оффлайн"));
@@ -301,19 +300,19 @@ protected:
     httpServer.send(200, "text/plain", reply);
   }
 
-  static void handleGetStatus()
+  void MainTaskClass::handleGetStatus()
   {
     httpServer.sendHeader("Content-Type", "application/json; charset=utf-8");
     httpServer.send(200, "text/plain", handleOutJson());
   }
 
-  static void handlePostCommand()
+  void MainTaskClass::handlePostCommand()
   {
     handleUpdateToMQTT(handleIncomingJson(String(httpServer.arg("plain"))));
     httpServer.send(204, "text/plain", "");
   }
 
-  void setup()
+  void MainTaskClass::setup()
   {
 
     MDNS.begin(host);
@@ -330,7 +329,7 @@ protected:
     client.setCallback(callback);
   }
 
-  void loop()
+  void MainTaskClass::loop()
   {
     // MQTT Loop
     if (!client.connected())
@@ -344,4 +343,3 @@ protected:
     MDNS.update();
   }
 
-} MainTask;

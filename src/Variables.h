@@ -92,7 +92,7 @@ static struct MAIN_VARIABLES
   VARIABLE<int> MaxCHsetpLow;
   VARIABLE<bool> dump_request = VARIABLE<bool>(false);
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
-  VARIABLE<long> MQTT_polling_interval = VARIABLE<long>(30000);
+  VARIABLE<unsigned long> MQTT_polling_interval = VARIABLE<unsigned long>(30000);
 
 private:
   EEPROM_Rotate eprom;

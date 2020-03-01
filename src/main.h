@@ -1,3 +1,5 @@
+#ifndef __MAIN_H__
+#define __MAIN_H__
 #include <FS.h>
 #include <Scheduler.h>
 #include "Variables.h"
@@ -14,15 +16,18 @@
 #include <OpenTherm.h>
 #include <ArduinoJson.h>
 
+#include "MainTask.h"
+#include "OpenThermTask.h"
+
 //Входные и выходные контакты OpenTherm, подключены к 4 и 5 контактам платы
 const int inPin = 4;  //D2
 const int outPin = 5; //D1
 
 #define BUILTIN_LED 2     // D4 Встроенный LED
 
-bool debug = false;
+extern bool debug; 
 //flag for saving data
-bool shouldSaveConfig = false;
+extern bool shouldSaveConfig; 
 
 #define DEBUG  \
     if (debug) \
@@ -32,15 +37,17 @@ bool shouldSaveConfig = false;
 
 #define WARN Serial
 
-char host[80] = "opentherm";
-char mqtt_server[80];
-char mqtt_port[6] = "1883";
-char mqtt_user[34];
-char mqtt_password[34];
+extern char host[80];
+extern char mqtt_server[80];
+extern char mqtt_port[6];
+extern char mqtt_user[34];
+extern char mqtt_password[34];
+
+extern OpenTherm ot;
+extern PubSubClient client;
+extern MainTaskClass  MainTask;
+extern OTHandleTask  OtHandler;
 
 
-OpenTherm ot(inPin, outPin);
-WiFiClient espClient;
-PubSubClient client(espClient);
-
+#endif
 /* Новый код добавляется из скетчей  */

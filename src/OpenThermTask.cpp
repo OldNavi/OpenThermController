@@ -1,30 +1,18 @@
+#include <main.h>
 // OpenTherm handling task class
+
 #define TIMEOUT_TRESHOLD 10
 static unsigned long timeout_count = 0;
 // OT Response
 static  unsigned long ot_response = 0;
 
-class OTHandleTask : public Task {
 
-private:
-  unsigned long new_ts = 0;
-  unsigned long ts = 0;
-  unsigned long send_ts = 0;
-  unsigned long send_newts = 0;
-  long loop_counter = 0;
-  bool  recirculation = true;
-  float
-      pv_last = 0, // предыдущая температура
-      ierr = 0,    // интегральная погрешность
-      dt = 0;      // время между измерениями
-
-public:
-  void static ICACHE_RAM_ATTR handleInterrupt()
+  void  ICACHE_RAM_ATTR OTHandleTask::handleInterrupt()
   {
     ot.handleInterrupt();
   }
 
-  void static HandleReply(unsigned long response) {
+  void  OTHandleTask::HandleReply(unsigned long response) {
     OpenThermMessageID id = ot.getDataID(response);
     uint8_t flags;
     switch (id)
@@ -90,7 +78,7 @@ public:
     }
   }
 
-  void static responseCallback(unsigned long result, OpenThermResponseStatus status)
+  void  OTHandleTask::responseCallback(unsigned long result, OpenThermResponseStatus status)
   {
     DEBUG.println("Status of response " + String(status));
     DEBUG.println("Result of response " + String(result));
@@ -123,11 +111,10 @@ public:
     }
   }
 
-protected:
   //===============================================================
   //              Вычисляем коэффициенты ПИД регулятора
   //===============================================================
-  float pid(float sp, float pv, float pv_last, float &ierr, float dt)
+  float OTHandleTask::pid(float sp, float pv, float pv_last, float &ierr, float dt)
   {
     float Kc = 5.0;   // K / %Heater
     float tauI = 50.0; // sec
@@ -166,7 +153,7 @@ protected:
   //===================================================================================================================
   //       Вычисляем температуру контура отпления, эквитермические кривые
   //===================================================================================================================
-  float curve(float sp, float pv)
+  float OTHandleTask::curve(float sp, float pv)
   {
     float a = (-0.21 * vars.iv_k.value) - 0.06;     // a = -0,21k — 0,06
     float b = (6.04 * vars.iv_k.value) + 1.98;      // b = 6,04k + 1,98
@@ -182,7 +169,7 @@ protected:
   //===================================================================================================================
   //       Вычисляем температуру контура отпления, эквитермические кривые с учётом влияния температуры в помещении
   //===================================================================================================================
-  float curve2(float sp, float pv)
+  float OTHandleTask::curve2(float sp, float pv)
   {
     // Расчет поправки (ошибки) термостата
     float error = sp - pv; // Tt = (Tu — T2) × 5
@@ -201,41 +188,41 @@ protected:
     return op;
   }
 
-  bool getBoilerTemp()
+  bool OTHandleTask::getBoilerTemp()
   {
     unsigned long response;
     return sendRequest(ot.buildGetBoilerTemperatureRequest(),response);
   }
 
-  bool getDHWTemp()
+  bool OTHandleTask::getDHWTemp()
   {
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0);
     return sendRequest(request,response);
   }
 
-  bool getOutsideTemp()
+  bool OTHandleTask::getOutsideTemp()
   {
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0);
     return sendRequest(request,response);
   }
 
-  bool setDHWTemp(float val)
+  bool OTHandleTask::setDHWTemp(float val)
   {
     unsigned long request = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::TdhwSet, ot.temperatureToData(val));
     unsigned long response;
     return sendRequest(request,response);
   }
 
-  bool getFaultCode()
+  bool OTHandleTask::getFaultCode()
   {
     unsigned long response;
     unsigned long request = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0);
     return sendRequest(request,response);
   }
 
-  bool sendRequest(unsigned long request, unsigned long& response)
+  bool OTHandleTask::sendRequest(unsigned long request, unsigned long& response)
   {
     send_newts = millis();
     if (send_newts - send_ts < 200)
@@ -260,13 +247,13 @@ protected:
   }
 
   // Main blocks here
-  void setup()
+  void OTHandleTask::setup()
   {
     // Setting up
     ot.begin(handleInterrupt, responseCallback);
   }
 
-  void printRequestDetail(OpenThermMessageID id, unsigned long request, unsigned long response)
+  void OTHandleTask::printRequestDetail(OpenThermMessageID id, unsigned long request, unsigned long response)
   {
     Serial.print("ID ");
     Serial.print(id);
@@ -278,7 +265,7 @@ protected:
     Serial.println(ot.statusToString(ot.getLastResponseStatus()));
   }
 
-  void testSupportedIDs()
+  void OTHandleTask::testSupportedIDs()
   {
     // Basic
     unsigned long request;
@@ -465,7 +452,7 @@ protected:
   }
 
   // Main OpenTherm loop
-  void loop()
+  void OTHandleTask::loop()
   {
     new_ts = millis();
     if (new_ts - ts > 1000)
@@ -586,4 +573,3 @@ protected:
     }
   }
 
-} OtHandler;

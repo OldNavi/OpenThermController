@@ -1,5 +1,7 @@
 
 //callback notifying us of the need to save config
+#include <main.h>
+
 void saveConfigCallback()
 {
   Serial.println("Should save config");
