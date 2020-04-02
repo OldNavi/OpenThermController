@@ -6,7 +6,7 @@ ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 // unsigned long MQTT_polling_interval = 30000;
-unsigned long mqtt_ts = 0, mqtt_new_ts = 0;
+unsigned long mqtt_ts = 0, mqtt_new_ts = 0, lastReconnectAttempt = 0;
 
 void forceARP() {
   struct netif *netif = netif_list;
@@ -114,8 +114,12 @@ void forceARP() {
 
   void MainTaskClass::reconnect()
   {
-    while (!client.connected())
-    {
+
+    long now = millis();
+    if (now - lastReconnectAttempt > 5000) {
+      lastReconnectAttempt = now;
+      // Attempt to reconnect
+
       Serial.print("Соединяемся с  MQTT сервером ...");
       // Attempt to connect
       if (client.connect("opentherm", mqtt_user, mqtt_password))
@@ -123,7 +127,7 @@ void forceARP() {
         Serial.println("ok");
         // после подключения публикуем объявление...
         // ... и перезаписываем
-
+        lastReconnectAttempt = 0;
         client.subscribe((vars.mqttTopicPrefix.value + "/cmnd").c_str());
         //      client.subscribe("spdhw");
       }
@@ -132,10 +136,6 @@ void forceARP() {
         Serial.print("Ошибка, rc =");
         Serial.print(client.state());
         Serial.println(" Попробуем снова через 5 секунд");
-
-        // Подождать 5 сек. перед повторной попыткой
-
-        delay(5000);
         forceARP();
       }
     }
@@ -335,10 +335,11 @@ void forceARP() {
     if (!client.connected())
     {
       reconnect();
+    } else {
+      handleUpdateToMQTT(false);
+      client.loop();
     }
     checkAndSaveConfig();
-    handleUpdateToMQTT(false);
-    client.loop();
     httpServer.handleClient();
     MDNS.update();
   }
