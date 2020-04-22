@@ -34,8 +34,8 @@ protected:
       if (json.containsKey("heater_temp"))
       {
         vars.heat_temp_set.value = json["heater_temp"] | 30.0;
-        needWrite = true;
-      }
+        if(!vars.house_temp_compsenation.value)
+            needWrite = true;      }
       if (json.containsKey("dhw_temp"))
       {
         vars.dhw_temp_set.value = json["dhw_temp"] | 50.0;
