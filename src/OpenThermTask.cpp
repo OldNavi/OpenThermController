@@ -506,57 +506,58 @@ static  unsigned long ot_response = 0;
       // Команды уставки
       setDHWTemp(vars.dhw_temp_set.value); // Записываем заданную температуру ГВС
 
-      if (vars.house_temp_compsenation.value)
-      {
-        float op;
-        switch (vars.mode.value)
+      if(vars.monitor_only.value == false) {
+        if (vars.house_temp_compsenation.value)
         {
-        case 0:
-          // pid
-          op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
-          pv_last = vars.house_temp.value;
-          vars.control_set.value = op;
-          if(vars.post_recirculation.value) 
-            recirculation = true;
-          else 
-            recirculation = (op >= vars.heat_temp_set.value);
-          localRequest = ot.buildSetBoilerTemperatureRequest(op);
-          sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
-          break;
-        case 1:
-          // эквитермические кривые
-          op = curve(vars.heat_temp_set.value, vars.house_temp.value);
-          vars.control_set.value = op;
-          if(vars.post_recirculation.value) 
-            recirculation = true;
-          else 
-            recirculation = (op >= vars.heat_temp_set.value);
-          localRequest = ot.buildSetBoilerTemperatureRequest(op);
-          sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)          
-          break;
-        case 2:
-          // эквитермические кривые с учетом температуры
-          op = curve2(vars.heat_temp_set.value, vars.house_temp.value);
-          vars.control_set.value = op;
-          if(vars.post_recirculation.value) 
-            recirculation = true;
-          else 
-            recirculation = (op >= vars.heat_temp_set.value);
-          localRequest = ot.buildSetBoilerTemperatureRequest(op);
-          sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
-          break;
-        default:
-          break;
+          float op;
+          switch (vars.mode.value)
+          {
+          case 0:
+            // pid
+            op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
+            pv_last = vars.house_temp.value;
+            vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
+            localRequest = ot.buildSetBoilerTemperatureRequest(op);
+            sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+            break;
+          case 1:
+            // эквитермические кривые
+            op = curve(vars.heat_temp_set.value, vars.house_temp.value);
+            vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
+            localRequest = ot.buildSetBoilerTemperatureRequest(op);
+            sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)          
+            break;
+          case 2:
+            // эквитермические кривые с учетом температуры
+            op = curve2(vars.heat_temp_set.value, vars.house_temp.value);
+            vars.control_set.value = op;
+            if(vars.post_recirculation.value) 
+              recirculation = true;
+            else 
+              recirculation = (op >= vars.heat_temp_set.value);
+            localRequest = ot.buildSetBoilerTemperatureRequest(op);
+            sendRequest(localRequest, localResponse); // Записываем заданную температуру СО, вычисляемую ПИД регулятором (переменная op)
+            break;
+          default:
+            break;
+          }
+          // if(vars.control_set.value < vars.heat_temp_set.value)
         }
-        // if(vars.control_set.value < vars.heat_temp_set.value)
+        else
+        {
+          localRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);
+          sendRequest(localRequest, localResponse);
+          recirculation = true; // No control over recirculation
+        }
       }
-      else
-      {
-        localRequest = ot.buildSetBoilerTemperatureRequest(vars.heat_temp_set.value);
-        sendRequest(localRequest, localResponse);
-        recirculation = true; // No control over recirculation
-      }
-
       // Верхняя и нижняя границы для регулировки установки TdhwSet-UB / TdhwSet-LB  (t°C)
       if(loop_counter <= 0) {
       localRequest = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0);
