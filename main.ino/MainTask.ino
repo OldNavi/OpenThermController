@@ -73,7 +73,7 @@ protected:
       }
       if (json.containsKey("tauD"))
       {
-        vars.Kc.value = json["tauD"] | 1.0f;
+        vars.tauD.value = json["tauD"] | 1.0f;
         needWrite = true;
       }           
       if (json.containsKey("monitor"))
