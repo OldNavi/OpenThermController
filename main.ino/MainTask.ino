@@ -21,7 +21,7 @@ class MainTaskClass : public Task
 protected:
   bool static handleIncomingJson(String payload)
   {
-    StaticJsonDocument<JSON_OBJECT_SIZE(22)> json;
+    StaticJsonDocument<JSON_OBJECT_SIZE(25)> json;
     deserializeJson(json, payload);
     bool needWrite = false;
     if (!json.isNull())
@@ -61,6 +61,21 @@ protected:
         vars.iv_k.value = json["curve_ratio"] | 1.5f;
         needWrite = true;
       }
+      if (json.containsKey("Kc"))
+      {
+        vars.Kc.value = json["Kc"] | 5.0f;
+        needWrite = true;
+      }
+      if (json.containsKey("tauI"))
+      {
+        vars.tauI.value = json["tauI"] | 10.0f;
+        needWrite = true;
+      }
+      if (json.containsKey("tauD"))
+      {
+        vars.Kc.value = json["tauD"] | 1.0f;
+        needWrite = true;
+      }           
       if (json.containsKey("monitor"))
       {
         vars.monitor_only.value = json["monitor"] | false;
@@ -148,7 +163,7 @@ protected:
     if (shouldSaveConfig)
     {
       Serial.println("saving config");
-      StaticJsonDocument<JSON_OBJECT_SIZE(30)> json;
+      StaticJsonDocument<JSON_OBJECT_SIZE(36)> json;
       json["mqtt_server"] = mqtt_server;
       json["hostname"] = host;
       json["mqtt_port"] = mqtt_port;
@@ -172,7 +187,7 @@ protected:
   String static handleOutJson()
   {
     String payload;
-    StaticJsonDocument<JSON_OBJECT_SIZE(33)> json;
+    StaticJsonDocument<JSON_OBJECT_SIZE(36)> json;
     json["mode"] = vars.mode.value;
     json["heater_temp_set"] = vars.heat_temp_set.value;
     json["control_set"] = String(vars.control_set.value,1);
@@ -203,6 +218,9 @@ protected:
     json["heat_max_limit"] = vars.MaxCHsetpUpp.value;
     json["heat_min_limit"] = vars.MaxCHsetpLow.value;
     json["curve_ratio"] = vars.iv_k.value;
+    json["Kc"] = vars.Kc.value;
+    json["tauI"] = vars.tauI.value;
+    json["tauD"] = vars.tauD.value;
     json["monitor"] = vars.monitor_only.value;
     json["poll_interval"] = vars.MQTT_polling_interval.value;
     serializeJson(json, payload);
@@ -287,6 +305,9 @@ protected:
     reply += String("\nТип управления = ") + (vars.control_type.value ? String("On/Off") : String("Модуляция"));
     reply += String("\nГВС  = ") + (vars.dhw_tank_present.value ? String("бак") : String("проточная"));
     reply += String("\nНаклон эквитермической кривой  = ") + vars.iv_k.value;
+    reply += String("\nПропорциональный коэф. = ") + vars.Kc.value;
+    reply += String("\nИнтегральный коэф. = ") + vars.tauI.value;
+    reply += String("\nДифференциальный коэф. = ") + vars.tauD.value;
     reply += String("\n ----------- Статусы ---------------");
     reply += String("\nОшибка котла  = ") + vars.isFault.value;
     reply += String("\nКод ошибки  = E") + vars.fault_code.value;

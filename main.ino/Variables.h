@@ -24,6 +24,9 @@
 #define MONITOR CURVE_K + sizeof(float)
 #define POLL_INTERVAL MONITOR + sizeof(bool)
 #define POST_REC POLL_INTERVAL  + sizeof(long)
+#define KC POST_REC + sizeof(float)
+#define TAUI KC + sizeof(float)
+#define TAUD TAUI + sizeof(float)
 
 
 // EEPROM_Rotate EEPROMr;
@@ -92,7 +95,10 @@ static struct MAIN_VARIABLES
   VARIABLE<int> MaxCHsetpLow;
   VARIABLE<bool> dump_request = VARIABLE<bool>(false);
   VARIABLE<String> mqttTopicPrefix = VARIABLE<String>(String("opentherm"));
-  VARIABLE<long> MQTT_polling_interval = VARIABLE<long>(30000);
+  VARIABLE<unsigned long> MQTT_polling_interval = VARIABLE<unsigned long>(30000);
+  VARIABLE<float> Kc = VARIABLE<float>(5.0);
+  VARIABLE<float> tauI = VARIABLE<float>(10.0);
+  VARIABLE<float> tauD = VARIABLE<float>(1.0);
 
 private:
   EEPROM_Rotate eprom;
@@ -119,6 +125,9 @@ public:
     eprom.put(MONITOR, monitor_only.value);
     eprom.put(POLL_INTERVAL, MQTT_polling_interval.value);
     eprom.put(POST_REC, post_recirculation.value);
+    eprom.put(KC, Kc.value);
+    eprom.put(TAUI, tauI.value);
+    eprom.put(TAUD, tauD.value);
     Serial.println("Пишем в EEPROM");
     Serial.println("Режим = " + String(mode.value));
     Serial.println("Уставка отопления = " + String(heat_temp_set.value));
@@ -129,6 +138,9 @@ public:
     Serial.println("Мониторинг = " + String(monitor_only.value));
     Serial.println("Цикл обновления MQTT = " + String(MQTT_polling_interval.value));
     Serial.println("Рециркуляция = " + String(post_recirculation.value));
+    Serial.println("Пропорциональный коэф. = " + String(Kc.value));
+    Serial.println("Интегральный коэф. = " + String(tauI.value));
+    Serial.println("Дифференциальный коэф. = " + String(tauD.value));
     commit();
   }
 
@@ -149,6 +161,10 @@ public:
     monitor_only.value = eprom.get(MONITOR,monitor_only.value);
     MQTT_polling_interval.value = eprom.get(POLL_INTERVAL,MQTT_polling_interval.value);
     post_recirculation.value = eprom.get(POST_REC,post_recirculation.value);
+    Kc.value = eprom.get(KC,Kc.value);
+    tauI.value = eprom.get(TAUI,tauI.value);
+    tauD.value = eprom.get(TAUD, tauD.value);
+
     Serial.println("Загружено из EEPROM");
     Serial.println("Режим = " + String(mode.value));
     Serial.println("Уставка отопления = " + String(heat_temp_set.value));
@@ -159,6 +175,9 @@ public:
     Serial.println("Мониторинг = " + String(monitor_only.value));
     Serial.println("Цикл обновления MQTT = " + String(MQTT_polling_interval.value));
     Serial.println("Рециркуляция = " + String(post_recirculation.value));
+    Serial.println("Пропорциональный коэф. = " + String(Kc.value));
+    Serial.println("Интегральный коэф. = " + String(tauI.value));
+    Serial.println("Дифференциальный коэф. = " + String(tauD.value));
   }
 
   void commit()
