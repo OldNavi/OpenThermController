@@ -1,4 +1,4 @@
-#include <FS.h>
+#include <LittleFS.h>
 #include <Scheduler.h>
 #include "Variables.h"
 #include <ESP8266WiFi.h>

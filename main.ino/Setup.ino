@@ -15,19 +15,18 @@ void setup_wifi()
   WiFi.mode(WIFI_STA);
   WiFiManager wifiManager;
   //clean FS, for testing
-  //SPIFFS.format();
 
   //read configuration from FS json
   Serial.println("mounting FS...");
 
-  if (SPIFFS.begin())
+  if (LittleFS.begin())
   {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json"))
+    if (LittleFS.exists("/config.json"))
     {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = LittleFS.open("/config.json", "r");
       if (configFile)
       {
         Serial.println("opened config file");
@@ -56,7 +55,7 @@ void setup_wifi()
         {
           Serial.println("failed to load json config");
           wifiManager.resetSettings();
-          SPIFFS.format();
+          LittleFS.format();
           delay(5000);
           ESP.reset();
         }
@@ -129,7 +128,7 @@ void setup_wifi()
     json["mqtt_user"] = mqtt_user;
     json["mqtt_password"] = mqtt_password;
 
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = LittleFS.open("/config.json", "w");
     if (!configFile)
     {
       Serial.println("failed to open config file for writing");

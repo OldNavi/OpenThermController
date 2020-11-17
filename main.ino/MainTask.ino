@@ -171,7 +171,7 @@ protected:
       json["mqtt_password"] = mqtt_password;
       json["mqtt_prefix"] = vars.mqttTopicPrefix.value;
 
-      File configFile = SPIFFS.open("/config.json", "w");
+      File configFile = LittleFS.open("/config.json", "w");
       if (!configFile)
       {
         Serial.println("failed to open config file for writing");
