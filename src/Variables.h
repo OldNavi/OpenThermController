@@ -52,7 +52,7 @@ static struct MAIN_VARIABLES
   VARIABLE<uint8_t> MasterVersion;
   VARIABLE<uint8_t> SlaveType;
   VARIABLE<uint8_t> SlaveVersion;
-  VARIABLE<bool> online = VARIABLE<bool>(true);
+  VARIABLE<bool> online = VARIABLE<bool>(false);
   VARIABLE<int> mode = VARIABLE<int>(0); // Режим регулятора 0-ПИД, 1-Эквитермические кривая ,2-уквитермическая кривая с учетом темрератур
   VARIABLE<float> heat_temp_set;
   VARIABLE<float> house_temp = VARIABLE<float>(24.0);

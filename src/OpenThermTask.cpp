@@ -102,7 +102,7 @@ static  unsigned long ot_response = 0;
       timeout_count++;
       if (timeout_count > TIMEOUT_TRESHOLD)
       {
-        // vars.online.value = false;
+        vars.online.value = false;
         timeout_count = TIMEOUT_TRESHOLD;
       }
       break;
