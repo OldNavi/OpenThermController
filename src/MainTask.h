@@ -3,11 +3,11 @@
 
 class MainTaskClass : public Task
 {
-
+public:
+    void reconnect();
 protected:
     bool static handleIncomingJson(String payload);
     void static callback(char *topic, byte *payload, unsigned int length);
-    void reconnect();
     void checkAndSaveConfig();
     String static handleOutJson();
     void static handleUpdateToMQTT(bool now);

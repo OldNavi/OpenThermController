@@ -5,6 +5,9 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 MainTaskClass  MainTask;
 OTHandleTask  OtHandler;
+WiFiEventHandler wifiConnectHandler;
+WiFiEventHandler wifiDisconnectHandler;
+Ticker wifiReconnectTimer;
 
 char host[80] = "opentherm";
 char mqtt_server[80];

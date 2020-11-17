@@ -1,6 +1,6 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
-#include <FS.h>
+#include <LittleFS.h>
 #include <Scheduler.h>
 #include "Variables.h"
 #include <ESP8266WiFi.h>
@@ -12,7 +12,8 @@
 #include <WiFiUdp.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
-
+#include <Ticker.h>
+// #include <AsyncMqttClient.h>
 #include <OpenTherm.h>
 #include <ArduinoJson.h>
 
@@ -47,7 +48,8 @@ extern OpenTherm ot;
 extern PubSubClient client;
 extern MainTaskClass  MainTask;
 extern OTHandleTask  OtHandler;
-
-
+extern WiFiEventHandler wifiConnectHandler;
+extern WiFiEventHandler wifiDisconnectHandler;
+extern Ticker wifiReconnectTimer;
 #endif
 /* Новый код добавляется из скетчей  */

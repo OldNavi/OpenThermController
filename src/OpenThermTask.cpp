@@ -85,6 +85,11 @@ static  unsigned long ot_response = 0;
     ot_response = result;
     switch (status)
     {
+    case OpenThermResponseStatus::SUCCESS:
+      timeout_count = 0;
+      vars.online.value = true;
+      HandleReply(result);
+      break;
     case OpenThermResponseStatus::INVALID:
       WARN.println("Ошибочный ответ от котла");
       if(debug)
@@ -97,15 +102,11 @@ static  unsigned long ot_response = 0;
       timeout_count++;
       if (timeout_count > TIMEOUT_TRESHOLD)
       {
-        vars.online.value = false;
+        // vars.online.value = false;
         timeout_count = TIMEOUT_TRESHOLD;
       }
       break;
-    case OpenThermResponseStatus::SUCCESS:
-      timeout_count = 0;
-      vars.online.value = true;
-      HandleReply(result);
-      break;
+
     default:
       break;
     }
@@ -116,15 +117,15 @@ static  unsigned long ot_response = 0;
   //===============================================================
   float OTHandleTask::pid(float sp, float pv, float pv_last, float &ierr, float dt)
   {
-    float Kc = 5.0;   // K / %Heater
-    float tauI = 50.0; // sec
-    float tauD = 1.0;  // sec
+    float Kc = vars.Kc.value;   // K / %Heater
+    float tauI = vars.tauI.value; // sec
+    float tauD = vars.tauD.value;  // sec
     // ПИД коэффициенты
     float KP = Kc;
     float KI = Kc / tauI;
     float KD = Kc * tauD;
     // верхняя и нижняя границы уровня нагрева
-    float ophi =  100;
+    float ophi =  constrain(vars.MaxCHsetpUpp.value,60,100);
     float oplo = 0;
     // вычислить ошибку
     float error = sp - pv;
