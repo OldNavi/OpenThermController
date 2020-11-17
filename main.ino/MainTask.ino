@@ -75,7 +75,12 @@ protected:
       {
         vars.tauD.value = json["tauD"] | 1.0f;
         needWrite = true;
-      }           
+      }  
+      if (json.containsKey("curve_kp"))
+      {
+        vars.curveKp.value = json["curve_kp"] | 1.0f;
+        needWrite = true;
+      }                 
       if (json.containsKey("monitor"))
       {
         vars.monitor_only.value = json["monitor"] | false;
@@ -221,6 +226,7 @@ protected:
     json["Kc"] = vars.Kc.value;
     json["tauI"] = vars.tauI.value;
     json["tauD"] = vars.tauD.value;
+    json["curve_kp"] = vars.curveKp.value;
     json["monitor"] = vars.monitor_only.value;
     json["poll_interval"] = vars.MQTT_polling_interval.value;
     serializeJson(json, payload);
@@ -308,6 +314,7 @@ protected:
     reply += String("\nПропорциональный коэф. = ") + vars.Kc.value;
     reply += String("\nИнтегральный коэф. = ") + vars.tauI.value;
     reply += String("\nДифференциальный коэф. = ") + vars.tauD.value;
+    reply += String("\nПропорциональный коэф. для кривых = ") + vars.curveKp.value;
     reply += String("\n ----------- Статусы ---------------");
     reply += String("\nОшибка котла  = ") + vars.isFault.value;
     reply += String("\nКод ошибки  = E") + vars.fault_code.value;

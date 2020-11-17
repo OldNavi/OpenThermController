@@ -186,7 +186,7 @@ protected:
   {
     // Расчет поправки (ошибки) термостата
     float error = sp - pv; // Tt = (Tu — T2) × 5
-    float temp_t = error * 3.0;
+    float temp_t = error * vars.curveKp.value;
     // Поправка на желаемую комнатную температуру
     // Температура контура отопления в зависимости от наружной температуры
     float a = (-0.21 * vars.iv_k.value) - 0.06;     // a = -0,21k — 0,06
