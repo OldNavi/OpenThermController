@@ -28,7 +28,7 @@
 #define TAUI KC + sizeof(float)
 #define TAUD TAUI + sizeof(float)
 #define CURVE_KP + sizeof(float)
-
+#define DT CURVE_KP + sizeof(int32_t)
 
 // EEPROM_Rotate EEPROMr;
 
@@ -101,7 +101,7 @@ static struct MAIN_VARIABLES
   VARIABLE<float> tauI = VARIABLE<float>(10.0);
   VARIABLE<float> tauD = VARIABLE<float>(1.0);
   VARIABLE<float> curveKp = VARIABLE<float>(1.0);
-
+  VARIABLE<int32_t> dT = VARIABLE<int32_t>(10*1000); // 10 sec default dt.
 private:
   EEPROM_Rotate eprom;
 
@@ -131,6 +131,7 @@ public:
     eprom.put(TAUI, tauI.value);
     eprom.put(TAUD, tauD.value);
     eprom.put(CURVE_KP, curveKp.value);
+    eprom.put(DT, dT.value);
     Serial.println("Пишем в EEPROM");
     Serial.println("Режим = " + String(mode.value));
     Serial.println("Уставка отопления = " + String(heat_temp_set.value));
@@ -145,6 +146,7 @@ public:
     Serial.println("Интегральный коэф. = " + String(tauI.value));
     Serial.println("Дифференциальный коэф. = " + String(tauD.value));
     Serial.println("Пропорциональный коэф. кривых = " + String(curveKp.value));
+    Serial.println("Дельта времени = " + String(dT.value));
     commit();
   }
 
@@ -169,6 +171,7 @@ public:
     tauI.value = eprom.get(TAUI,tauI.value);
     tauD.value = eprom.get(TAUD, tauD.value);
     curveKp.value = eprom.get(CURVE_KP,curveKp.value);
+    dT.value = eprom.get(DT,dT.value);
     Serial.println("Загружено из EEPROM");
     Serial.println("Режим = " + String(mode.value));
     Serial.println("Уставка отопления = " + String(heat_temp_set.value));
@@ -183,6 +186,7 @@ public:
     Serial.println("Интегральный коэф. = " + String(tauI.value));
     Serial.println("Дифференциальный коэф. = " + String(tauD.value));
     Serial.println("Пропорциональный коэф. кривых = " + String(curveKp.value));
+    Serial.println("Дельта времени = " + String(dT.value));
   }
 
   void commit()

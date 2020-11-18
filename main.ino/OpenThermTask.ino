@@ -4,6 +4,125 @@ static unsigned long timeout_count = 0;
 // OT Response
 static  unsigned long ot_response = 0;
 
+
+#if defined(PID_INTEGER)	// расчёты с целыми числами
+typedef int datatype;
+#else						// расчёты с float числами
+typedef float datatype;
+#endif
+
+#define NORMAL 0
+#define REVERSE 1
+#define ON_ERROR 0
+#define ON_RATE 1
+
+class GyverPID {
+public:
+	// ==== datatype это float или int, в зависимости от выбранного (см. пример integer_calc) ====
+	GyverPID(){}
+	
+	// kp, ki, kd, dt
+	GyverPID(float new_kp, float new_ki, float new_kd, int32_t new_dt = 100) {
+		setDt(new_dt);
+		Kp = new_kp;
+		Ki = new_ki;
+		Kd = new_kd;
+	}	
+
+	// направление регулирования: NORMAL (0) или REVERSE (1)
+	void setDirection(boolean direction) {				
+		_direction = direction;
+	}
+	
+	// режим: работа по входной ошибке ON_ERROR (0) или по изменению ON_RATE (1)
+	void setMode(boolean mode) {						
+		_mode = mode;
+	}
+	
+	// лимит выходной величины (например для ШИМ ставим 0-255)
+	void setLimits(datatype min_output, datatype max_output) {	
+		_minOut = min_output;
+		_maxOut = max_output;
+	}
+	
+	// установка времени дискретизации (для getResultTimer)
+	void setDt(int32_t new_dt) {						
+		_dt_s = new_dt / 1000.0f;
+		_dt = new_dt;
+	}
+	
+	datatype setpoint = 0;		// заданная величина, которую должен поддерживать регулятор
+	datatype input = 0;			// сигнал с датчика (например температура, которую мы регулируем)
+	datatype output = 0;		// выход с регулятора на управляющее устройство (например величина ШИМ или угол поворота серво)
+	float Kp = 0.0;				// коэффициент P
+	float Ki = 0.0;				// коэффициент I
+	float Kd = 0.0;				// коэффициент D	
+	float integral = 0.0;		// интегральная сумма
+	
+	// возвращает новое значение при вызове (если используем свой таймер с периодом dt!)
+	datatype getResult() {
+		datatype error = setpoint - input;			// ошибка регулирования
+		datatype delta_input = prevInput - input;	// изменение входного сигнала за dt
+		prevInput = input;							// запомнили предыдущее
+		if (_direction) {							// смена направления
+			error = -error;
+			delta_input = -delta_input;
+		}
+		output = _mode ? 0 : (error * Kp); 			// пропорциональая составляющая
+		output += delta_input * Kd / _dt_s;			// дифференциальная составляющая
+
+#if (PID_INTEGRAL_WINDOW > 0)
+		// ЭКСПЕРИМЕНТАЛЬНЫЙ РЕЖИМ ИНТЕГРАЛЬНОГО ОКНА
+		if (++t >= PID_INTEGRAL_WINDOW) t = 0; 		// перемотка t
+		integral -= errors[t];     					// вычитаем старое	
+		errors[t] = error * Ki * _dt_s;  			// запоминаем в массив
+		integral += errors[t];         				// прибавляем новое
+#else		
+		integral += error * Ki * _dt_s;				// обычное суммирование инт. суммы
+#endif	
+
+#ifdef PID_OPTIMIZED_I
+		// ЭКСПЕРИМЕНТАЛЬНЫЙ РЕЖИМ ОГРАНИЧЕНИЯ ИНТЕГРАЛЬНОЙ СУММЫ
+		output = constrain(output, _minOut, _maxOut);
+		if (Ki != 0) integral = constrain(integral, (_minOut - output) / (Ki * _dt_s), (_maxOut - output) / (Ki * _dt_s));
+#endif
+
+		if (_mode) integral += delta_input * Kp;			// режим пропорционально скорости
+		integral = constrain(integral, _minOut, _maxOut);	// ограничиваем инт. сумму
+		output += integral;									// интегральная составляющая
+		output = constrain(output, _minOut, _maxOut);		// ограничиваем выход
+		return output;
+	}
+	
+	// возвращает новое значение не ранее, чем через dt миллисекунд (встроенный таймер с периодом dt)
+	datatype getResultTimer() {
+		if (millis() - pidTimer >= _dt) {
+			pidTimer = millis();
+			getResult();
+		}
+		return output;
+	}
+	
+	// посчитает выход по реальному прошедшему времени между вызовами функции
+	datatype getResultNow() {
+		setDt(millis() - pidTimer);
+		pidTimer = millis();
+		return getResult();
+	}
+	
+private:
+	uint32_t _dt = 100;		// время итерации в мс
+	float _dt_s = 0.1;		// время итерации в с
+	boolean _mode = 0, _direction = 0;
+	datatype _minOut = 0, _maxOut = 255;	
+	datatype prevInput = 0;	
+	uint32_t pidTimer = 0;
+#if (PID_INTEGRAL_WINDOW > 0)
+	datatype errors[PID_INTEGRAL_WINDOW];
+	int t = 0;	
+#endif
+};
+
 class OTHandleTask : public Task {
 
 private:
@@ -13,11 +132,11 @@ private:
   unsigned long send_newts = 0;
   long loop_counter = 0;
   bool  recirculation = true;
-  float
-      pv_last = 0, // предыдущая температура
-      ierr = 0,    // интегральная погрешность
-      dt = 0;      // время между измерениями
-
+  // float
+  //     pv_last = 0, // предыдущая температура
+  //     ierr = 0,    // интегральная погрешность
+  //     dt = 0;      // время между измерениями
+  class GyverPID pidController;
 public:
   void static ICACHE_RAM_ATTR handleInterrupt()
   {
@@ -26,7 +145,7 @@ public:
 
   void static HandleReply(unsigned long response) {
     OpenThermMessageID id = ot.getDataID(response);
-    uint8_t flags;
+    uint8_t flags;  
     switch (id)
     {
     case OpenThermMessageID::SConfigSMemberIDcode:
@@ -127,41 +246,16 @@ protected:
   //===============================================================
   //              Вычисляем коэффициенты ПИД регулятора
   //===============================================================
-  float pid(float sp, float pv, float pv_last, float &ierr, float dt)
+  float pid(float sp, float pv)
   {
-    float Kc = vars.Kc.value;   // K / %Heater
-    float tauI = vars.tauI.value; // sec
-    float tauD = vars.tauD.value;  // sec
-    // ПИД коэффициенты
-    float KP = Kc;
-    float KI = Kc / tauI;
-    float KD = Kc * tauD;
-    // верхняя и нижняя границы уровня нагрева
-    float ophi =  constrain(vars.MaxCHsetpUpp.value,60,100);
-    float oplo = 0;
-    // вычислить ошибку
-    float error = sp - pv;
-    // calculate the integral error
-    ierr = ierr + KI * error * dt;
-    // вычислить производную измерения
-    float dpv = (pv - pv_last) / dt;
-    // рассчитать выход ПИД регулятора
-    float P = KP * error; // пропорциональная составляющая
-    float I = ierr;       // интегральная составляющая
-    float D = -KD * dpv;  // дифференциальная составляющая
-    float op = P + I + D;
-    // защита от сброса
-    if((op < oplo) || (op > ophi))
-    {
-      I = I - KI * error * dt;
-      // выход регулятора, он же уставка для ID-1 (температура теплоносителя контура СО котла)
-      op =  constrain(op, oplo, ophi);
-    }
-    ierr = I;
-    DEBUG.println("Заданное значение температуры в помещении = " + String(sp) + " °C");
-    DEBUG.println("Текущее значение температуры в помещении = " + String(pv) + " °C");
-    DEBUG.println("Выхов ПИД регулятора = " + String(op));
-    return op;
+    pidController.setDt(vars.dT.value);
+    pidController.Kp = vars.Kc.value;   // K / %Heater
+    pidController.Ki = vars.tauI.value; // sec
+    pidController.Kd = vars.tauD.value;  // sec
+    pidController.setLimits(0,vars.MaxCHsetpUpp.value);
+    pidController.input = pv;
+    pidController.setpoint = sp;
+    return pidController.getResultTimer();
   }
   //===================================================================================================================
   //       Вычисляем температуру контура отпления, эквитермические кривые
@@ -474,7 +568,7 @@ protected:
       unsigned long localRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value & recirculation, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
       sendRequest(localRequest,localResponse);
 
-      dt = (new_ts - ts) / 1000;
+      // dt = (new_ts - ts) / 1000;
       ts = new_ts;
 
       if (vars.dump_request.value)
@@ -526,8 +620,7 @@ protected:
         {
         case 0:
           // pid
-          op = pid(vars.heat_temp_set.value, vars.house_temp.value, pv_last, ierr, dt);
-          pv_last = vars.house_temp.value;
+          op = pid(vars.heat_temp_set.value, vars.house_temp.value);
           vars.control_set.value = op;
           if(vars.post_recirculation.value) 
             recirculation = true;
