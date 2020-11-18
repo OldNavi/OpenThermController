@@ -176,7 +176,7 @@ protected:
     // Расчетная температура конура отопления
     float op = temp_n; // T = Tn
     // Ограничиваем температуру для ID-1
-    op =  constrain(op, 0, 100);
+    op =  constrain(op, 0, constrain(vars.MaxCHsetpUpp.value,60,100));
     return op;
   }
   //===================================================================================================================
@@ -197,7 +197,7 @@ protected:
     // Расчетная температура конура отопления
     float op = temp_n + temp_t; // T = Tn + Tk + Tt
     // Ограничиваем температуру для ID-1
-    op =  constrain(op, 0, 100);
+    op =  constrain(op, 0, constrain(vars.MaxCHsetpUpp.value,60,100));
     return op;
   }
 
