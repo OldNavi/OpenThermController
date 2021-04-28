@@ -141,8 +141,8 @@ protected:
   void reconnect()
   {
 
-    long now = millis();
-    if (now - lastReconnectAttempt > 5000) {
+    unsigned long now = millis();
+    if ((unsigned long)(now - lastReconnectAttempt) > 5000) {
       lastReconnectAttempt = now;
       // Attempt to reconnect
 
@@ -242,7 +242,7 @@ protected:
   void static handleUpdateToMQTT(bool now)
   {
     mqtt_new_ts = millis();
-    if ((mqtt_new_ts - mqtt_ts > vars.MQTT_polling_interval.value) || now)
+    if (((unsigned long)(mqtt_new_ts - mqtt_ts) > vars.MQTT_polling_interval.value) || now)
     {
       // publisish all MQTT stuff
       mqtt_ts = mqtt_new_ts;

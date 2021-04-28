@@ -46,7 +46,7 @@ public:
 	}
 	
 	// установка времени дискретизации (для getResultTimer)
-	void setDt(int32_t new_dt) {						
+	void setDt(unsigned long new_dt) {						
 		_dt_s = new_dt / 1000.0f;
 		_dt = new_dt;
 	}
@@ -96,8 +96,9 @@ public:
 	
 	// возвращает новое значение не ранее, чем через dt миллисекунд (встроенный таймер с периодом dt)
 	datatype getResultTimer() {
-		if (millis() - pidTimer >= _dt) {
-			pidTimer = millis();
+    unsigned long now = millis();
+		if ((unsigned long)(now - pidTimer) >= _dt) {
+			pidTimer = now;
 			getResult();
 		}
 		return output;
@@ -105,18 +106,19 @@ public:
 	
 	// посчитает выход по реальному прошедшему времени между вызовами функции
 	datatype getResultNow() {
-		setDt(millis() - pidTimer);
-		pidTimer = millis();
+    unsigned long now = millis();
+		setDt(now - pidTimer);
+		pidTimer = now;
 		return getResult();
 	}
 	
 private:
-	uint32_t _dt = 100;		// время итерации в мс
+	unsigned long _dt = 100;		// время итерации в мс
 	float _dt_s = 0.1;		// время итерации в с
 	boolean _mode = 0, _direction = 0;
 	datatype _minOut = 0, _maxOut = 255;	
 	datatype prevInput = 0;	
-	uint32_t pidTimer = 0;
+	unsigned long pidTimer = 0;
 #if (PID_INTEGRAL_WINDOW > 0)
 	datatype errors[PID_INTEGRAL_WINDOW];
 	int t = 0;	
@@ -562,7 +564,7 @@ protected:
   void loop()
   {
     new_ts = millis();
-    if (new_ts - ts > 1000)
+    if ((unsigned long)(new_ts - ts) > 1000)
     {
       unsigned long localResponse;
       unsigned long localRequest = ot.buildSetBoilerStatusRequest(vars.enableCentralHeating.value & recirculation, vars.enableHotWater.value, vars.enableCooling.value, vars.enableOutsideTemperatureCompensation.value, vars.enableCentralHeating2.value);
