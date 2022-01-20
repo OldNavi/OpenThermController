@@ -140,7 +140,7 @@ private:
   //     dt = 0;      // время между измерениями
   class GyverPID pidController;
 public:
-  void static ICACHE_RAM_ATTR handleInterrupt()
+  void static IRAM_ATTR handleInterrupt()
   {
     ot.handleInterrupt();
   }

@@ -148,7 +148,7 @@ protected:
 
       Serial.print("Соединяемся с  MQTT сервером ...");
       // Attempt to connect
-      if (client.connect("opentherm", mqtt_user, mqtt_password, vars.mqttTopicPrefix.value+"/status",0,true,"offline"))
+      if (client.connect("opentherm", mqtt_user, mqtt_password, (vars.mqttTopicPrefix.value+"/status").c_str(),0,true,"offline"))
       {
         Serial.println("ok");
         // после подключения публикуем объявление...

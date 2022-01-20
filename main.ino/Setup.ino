@@ -15,7 +15,7 @@ void setup_wifi()
   WiFi.mode(WIFI_STA);
   WiFiManager wifiManager;
   //clean FS, for testing
-
+  WiFi.setSleepMode(WIFI_NONE_SLEEP); // Don't sleep
   //read configuration from FS json
   Serial.println("mounting FS...");
 
