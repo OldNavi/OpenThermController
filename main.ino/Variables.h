@@ -76,7 +76,7 @@ static struct MAIN_VARIABLES
   VARIABLE<bool> gas_fault = VARIABLE<bool>(false);
   VARIABLE<bool> air_fault = VARIABLE<bool>(false);
   VARIABLE<bool> water_overtemp = VARIABLE<bool>(false);
-  VARIABLE<float> iv_k = VARIABLE<float>(1.5f);
+  VARIABLE<float> iv_k = VARIABLE<float>(1.0f);
   VARIABLE<bool> monitor_only = VARIABLE<bool>(false);
   VARIABLE<bool> post_recirculation  = VARIABLE<bool>(true);
   VARIABLE<bool> dhw_present;          // false - not present, true - present
@@ -100,7 +100,7 @@ static struct MAIN_VARIABLES
   VARIABLE<float> Kc = VARIABLE<float>(5.0);
   VARIABLE<float> tauI = VARIABLE<float>(10.0);
   VARIABLE<float> tauD = VARIABLE<float>(1.0);
-  VARIABLE<float> curveKp = VARIABLE<float>(1.0);
+  VARIABLE<float> curveKp = VARIABLE<float>(10.0);
   VARIABLE<int32_t> dT = VARIABLE<int32_t>(10*1000); // 10 sec default dt.
 private:
   EEPROM_Rotate eprom;
